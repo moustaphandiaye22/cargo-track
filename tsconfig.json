@@ -1,0 +1,10 @@
+{ "compilerOptions": {
+    "target": "es2016",
+    "outDir": "./dist",
+    "strict": true
+  },
+  "include": [
+    "src/**/*",
+    "src/service/**/*"
+  ]
+}
