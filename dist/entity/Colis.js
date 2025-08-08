@@ -1,4 +1,7 @@
-export class Colis {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Colis = void 0;
+class Colis {
     constructor() {
     }
     getCode() { return this.code; }
@@ -46,3 +49,5 @@ export class Colis {
     setDateArchivage(dateArchivage) { this.dateArchivage = dateArchivage; }
     ;
 }
+exports.Colis = Colis;
+//# sourceMappingURL=Colis.js.map

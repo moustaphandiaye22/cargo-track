@@ -1,0 +1,8 @@
+export declare enum TypeColis {
+    ALIMENTAIRE = "ALIMENTAIRE",
+    CHIMIQUE = "CHIMIQUE",
+    FRAGILE = "FRAGILE",
+    INCASSABLE = "INCASSABLE",
+    MATERIEL = "MATERIEL",
+    AUTRES = "AUTRES"
+}

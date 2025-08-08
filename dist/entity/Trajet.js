@@ -1,4 +1,7 @@
-export class Trajet {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Trajet = void 0;
+class Trajet {
     constructor(lieuDepart, lieuArrive) {
         this.lieuDepart = lieuDepart;
         this.lieuArrive = lieuArrive;
@@ -20,3 +23,5 @@ export class Trajet {
         return this.lieuDepart.distance(this.lieuArrive);
     }
 }
+exports.Trajet = Trajet;
+//# sourceMappingURL=Trajet.js.map

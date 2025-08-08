@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Gestionnaire - CargoTrack</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'coral': '#FF8C00',
+                        'sunset': '#FF8E53',
+                        'emerald': '#4ECDC4',
+                        'golden': '#FFE66D',
+                        'charcoal': '#2C3E50',
+                        'light-gray': '#ECF0F1',
+                        'medium-gray': '#95A5A6'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: #FF8C00;
+        }
+        .btn-gradient {
+            background: #FF8C00;
+        }
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #FF8E53 0%, #FF6B6B 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+        }
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .modal {
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="bg-light-gray min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-truck text-coral text-2xl mr-3"></i>
+                    <span class="text-2xl font-bold text-charcoal">CargoTrack</span>
+                    <span class="ml-4 px-3 py-1 bg-emerald text-white text-sm rounded-full">Gestionnaire</span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center space-x-2 text-charcoal">
+                        <i class="fas fa-user-circle text-coral"></i>
+                        <span id="username"><?php echo isset($_SESSION['user']['username']) ? $_SESSION['user']['username'] : 'Admin'; ?></span>
+                    </div>
+                    <button onclick="seDeconnecter()" class="bg-coral hover:bg-sunset text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="gradient-bg text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2">
+                <i class="fas fa-tachometer-alt mr-3"></i>Tableau de Bord Gestionnaire
+            </h1>
+            <p class="text-xl opacity-90">Gérez vos cargaisons, colis et clients en temps réel</p>
+        </div>
+    </section>
+
+    <!-- Statistics Cards -->
+    <section class="py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="stat-card bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-medium-gray text-sm font-semibold">Colis Actifs</p>
+                            <p class="text-3xl font-bold text-charcoal">156</p>
+                            <p class="text-emerald text-sm">+12% ce mois</p>
+                        </div>
+                        <div class="w-12 h-12 bg-coral rounded-lg flex items-center justify-center">
+                            <i class="fas fa-box text-white text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-medium-gray text-sm font-semibold">Cargaisons</p>
+                            <p class="text-3xl font-bold text-charcoal">23</p>
+                            <p class="text-emerald text-sm">+5% ce mois</p>
+                        </div>
+                        <div class="w-12 h-12 bg-emerald rounded-lg flex items-center justify-center">
+                            <i class="fas fa-ship text-white text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-medium-gray text-sm font-semibold">En Transit</p>
+                            <p class="text-3xl font-bold text-charcoal">89</p>
+                            <p class="text-golden text-sm">Temps réel</p>
+                        </div>
+                        <div class="w-12 h-12 bg-golden rounded-lg flex items-center justify-center">
+                            <i class="fas fa-truck text-white text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-medium-gray text-sm font-semibold">Clients</p>
+                            <p class="text-3xl font-bold text-charcoal">342</p>
+                            <p class="text-emerald text-sm">+8% ce mois</p>
+                        </div>
+                        <div class="w-12 h-12 bg-sunset rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-white text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Tab Navigation -->
+            <div class="bg-white rounded-xl shadow-lg mb-8">
+                <div class="flex flex-wrap border-b border-light-gray">
+                    <button onclick="showTab('cargaisons')" class="tab-btn active px-6 py-4 font-semibold text-coral border-b-2 border-coral">
+                        <i class="fas fa-ship mr-2"></i>Cargaisons
+                    </button>
+                    <button onclick="showTab('colis')" class="tab-btn px-6 py-4 font-semibold text-medium-gray hover:text-coral transition-colors">
+                        <i class="fas fa-box mr-2"></i>Colis
+                    </button>
+                    <button onclick="showTab('clients')" class="tab-btn px-6 py-4 font-semibold text-medium-gray hover:text-coral transition-colors">
+                        <i class="fas fa-users mr-2"></i>Clients
+                    </button>
+                    <button onclick="showTab('nouveau')" class="tab-btn px-6 py-4 font-semibold text-medium-gray hover:text-coral transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Nouveau
+                    </button>
+                </div>
+
+                <!-- Cargaisons Tab -->
+                <div id="tab-cargaisons" class="tab-content p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <h2 class="text-2xl font-bold text-charcoal">Gestion des Cargaisons</h2>
+                        <button onclick="openModal('modalNouvelleCargaison')" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                            <i class="fas fa-plus mr-2"></i>Nouvelle Cargaison
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <input type="text" placeholder="Rechercher une cargaison..." class="w-full md:w-1/3 px-4 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none">
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full bg-white rounded-lg shadow">
+                            <thead class="bg-light-gray">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">Numéro</th>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">Type</th>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">Route</th>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">État</th>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">Colis</th>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-light-gray">
+                                <tr class="hover:bg-light-gray transition-colors">
+                                    <td class="px-6 py-4 font-semibold text-charcoal">CG001</td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-3 py-1 bg-emerald text-white rounded-full text-sm">Maritime</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-medium-gray">Dakar → Paris</td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-3 py-1 bg-coral text-white rounded-full text-sm">En Transit</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-medium-gray">45/50</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex space-x-2">
+                                            <button class="text-emerald hover:bg-emerald hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-golden hover:bg-golden hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-coral hover:bg-coral hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-light-gray transition-colors">
+                                    <td class="px-6 py-4 font-semibold text-charcoal">CG002</td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-3 py-1 bg-golden text-white rounded-full text-sm">Aérien</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-medium-gray">Dakar → Londres</td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-3 py-1 bg-emerald text-white rounded-full text-sm">Arrivé</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-medium-gray">12/15</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex space-x-2">
+                                            <button class="text-emerald hover:bg-emerald hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-golden hover:bg-golden hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-coral hover:bg-coral hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-archive"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Colis Tab -->
+                <div id="tab-colis" class="tab-content p-6 hidden">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <h2 class="text-2xl font-bold text-charcoal">Gestion des Colis</h2>
+                        <button onclick="openModal('modalNouveauColis')" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                            <i class="fas fa-plus mr-2"></i>Nouveau Colis
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <input type="text" placeholder="Rechercher par code colis..." class="w-full md:w-1/3 px-4 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none">
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full bg-white rounded-lg shadow">
+                            <thead class="bg-light-gray">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">Code</th>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">Expéditeur</th>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">Destinataire</th>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">Poids</th>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">État</th>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-light-gray">
+                                <tr class="hover:bg-light-gray transition-colors">
+                                    <td class="px-6 py-4 font-semibold text-charcoal">PKG001</td>
+                                    <td class="px-6 py-4 text-medium-gray">Jean Dupont</td>
+                                    <td class="px-6 py-4 text-medium-gray">Marie Martin</td>
+                                    <td class="px-6 py-4 text-medium-gray">2.5 kg</td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-3 py-1 bg-coral text-white rounded-full text-sm">En Transit</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex space-x-2">
+                                            <button class="text-emerald hover:bg-emerald hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-golden hover:bg-golden hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-coral hover:bg-coral hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-light-gray transition-colors">
+                                    <td class="px-6 py-4 font-semibold text-charcoal">PKG002</td>
+                                    <td class="px-6 py-4 text-medium-gray">Société ABC</td>
+                                    <td class="px-6 py-4 text-medium-gray">Client XYZ</td>
+                                    <td class="px-6 py-4 text-medium-gray">15.2 kg</td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-3 py-1 bg-emerald text-white rounded-full text-sm">Livré</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex space-x-2">
+                                            <button class="text-emerald hover:bg-emerald hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-golden hover:bg-golden hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-medium-gray hover:bg-medium-gray hover:text-white px-3 py-1 rounded transition-all">
+                                                <i class="fas fa-archive"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Clients Tab -->
+                <div id="tab-clients" class="tab-content p-6 hidden">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <h2 class="text-2xl font-bold text-charcoal">Gestion des Clients</h2>
+                        <button onclick="openModal('modalNouveauClient')" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                            <i class="fas fa-plus mr-2"></i>Nouveau Client
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <input type="text" placeholder="Rechercher un client..." class="w-full md:w-1/3 px-4 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none">
+                    </div>
+
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 bg-coral rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-charcoal">Jean Dupont</h3>
+                                    <p class="text-medium-gray text-sm">Client Premium</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <p class="text-medium-gray"><i class="fas fa-envelope text-coral mr-2"></i>jean.dupont@email.com</p>
+                                <p class="text-medium-gray"><i class="fas fa-phone text-coral mr-2"></i>+221 77 123 45 67</p>
+                                <p class="text-medium-gray"><i class="fas fa-box text-coral mr-2"></i>12 colis envoyés</p>
+                            </div>
+                            <div class="mt-4 flex space-x-2">
+                                <button class="flex-1 bg-emerald text-white py-2 rounded-lg text-sm hover:bg-opacity-90 transition-all">
+                                    <i class="fas fa-eye mr-1"></i>Voir
+                                </button>
+                                <button class="flex-1 bg-golden text-white py-2 rounded-lg text-sm hover:bg-opacity-90 transition-all">
+                                    <i class="fas fa-edit mr-1"></i>Modifier
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 bg-emerald rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-building text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-charcoal">Société ABC</h3>
+                                    <p class="text-medium-gray text-sm">Entreprise</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <p class="text-medium-gray"><i class="fas fa-envelope text-coral mr-2"></i>contact@abc.com</p>
+                                <p class="text-medium-gray"><i class="fas fa-phone text-coral mr-2"></i>+221 33 456 78 90</p>
+                                <p class="text-medium-gray"><i class="fas fa-box text-coral mr-2"></i>45 colis envoyés</p>
+                            </div>
+                            <div class="mt-4 flex space-x-2">
+                                <button class="flex-1 bg-emerald text-white py-2 rounded-lg text-sm hover:bg-opacity-90 transition-all">
+                                    <i class="fas fa-eye mr-1"></i>Voir
+                                </button>
+                                <button class="flex-1 bg-golden text-white py-2 rounded-lg text-sm hover:bg-opacity-90 transition-all">
+                                    <i class="fas fa-edit mr-1"></i>Modifier
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nouveau Tab -->
+                <div id="tab-nouveau" class="tab-content p-6 hidden">
+                    <h2 class="text-2xl font-bold text-charcoal mb-6">Actions Rapides</h2>
+                    
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <button onclick="openModal('modalNouvelleCargaison')" class="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all text-center group">
+                            <div class="w-16 h-16 bg-coral rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-ship text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-charcoal mb-2">Nouvelle Cargaison</h3>
+                            <p class="text-medium-gray text-sm">Créer une nouvelle cargaison maritime, aérienne ou routière</p>
+                        </button>
+
+                        <button onclick="openModal('modalNouveauColis')" class="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all text-center group">
+                            <div class="w-16 h-16 bg-emerald rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-box text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-charcoal mb-2">Nouveau Colis</h3>
+                            <p class="text-medium-gray text-sm">Enregistrer un nouveau colis dans le système</p>
+                        </button>
+
+                        <button onclick="openModal('modalNouveauClient')" class="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all text-center group">
+                            <div class="w-16 h-16 bg-golden rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-user-plus text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-charcoal mb-2">Nouveau Client</h3>
+                            <p class="text-medium-gray text-sm">Ajouter un nouveau client à la base de données</p>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modals -->
+    <!-- Modal Nouvelle Cargaison -->
+    <div id="modalNouvelleCargaison" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-charcoal">Nouvelle Cargaison</h3>
+                <button onclick="closeModal('modalNouvelleCargaison')" class="text-medium-gray hover:text-coral text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form class="space-y-4">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Type de Transport</label>
+                        <select class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none">
+                            <option>Maritime</option>
+                            <option>Aérien</option>
+                            <option>Routier</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Capacité (colis)</label>
+                        <input type="number" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="50">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Ville de Départ</label>
+                        <input type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Dakar">
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Ville d'Arrivée</label>
+                        <input type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Paris">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Date de Départ</label>
+                        <input type="date" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Date d'Arrivée Estimée</label>
+                        <input type="date" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-4 mt-8">
+                    <button type="button" onclick="closeModal('modalNouvelleCargaison')" class="px-6 py-3 border border-light-gray text-medium-gray rounded-lg hover:bg-light-gray transition-all">
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                        Créer Cargaison
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Le nom d'utilisateur sera affiché via PHP si connecté
+
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-coral', 'border-b-2', 'border-coral');
+                btn.classList.add('text-medium-gray');
+            });
+            
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            
+            // Add active class to selected tab button
+            event.target.classList.add('active', 'text-coral', 'border-b-2', 'border-coral');
+            event.target.classList.remove('text-medium-gray');
+        }
+
+        // Modal functionality
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.getElementById(modalId).classList.add('flex');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.getElementById(modalId).classList.remove('flex');
+        }
+
+        // Logout functionality
+        function seDeconnecter() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                window.location.href = '/logout';
+            }
+        }
+
+        // Close modals when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                    this.classList.remove('flex');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,4 +1,7 @@
-export class Recu {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Recu = void 0;
+class Recu {
     constructor() { }
     getNumerorecu() { return this.numerorecu; }
     ;
@@ -25,3 +28,5 @@ export class Recu {
     setMontanttotal(montanttotal) { this.montanttotal = montanttotal; }
     ;
 }
+exports.Recu = Recu;
+//# sourceMappingURL=Recu.js.map

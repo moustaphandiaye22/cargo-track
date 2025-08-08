@@ -1,0 +1,15 @@
+{
+    "name": "moustapha-ndiaye/gestioncargaison",
+    "autoload": {
+        "psr-4": {
+            "MoustaphaNdiaye\\Gestioncargaison\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "moustaphabdiaye22",
+            "email": "tziprincii434@gmail.com"
+        }
+    ],
+    "require": {}
+}

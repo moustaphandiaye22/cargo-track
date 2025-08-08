@@ -1,15 +1,22 @@
 {
   "name": "gestion-cargaison",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["cargo", "tracking", "typescript", "php"],
+  "author": "moustaphabdiaye22",
   "license": "ISC",
-  "description": "",
+  "description": "Système de gestion de cargaisons avec TypeScript et PHP",
   "devDependencies": {
-    "typescript": "^5.9.2"
-  }
+    "typescript": "^5.9.2",
+    "@types/node": "^20.0.0"
+  },
+  "dependencies": {}
 }

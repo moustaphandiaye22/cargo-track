@@ -1,0 +1,177 @@
+{
+  "cargaisons": [
+    {
+      "id": 1,
+      "numero": 100001,
+      "type": "MARITIME",
+      "etatGlobal": "OUVERT",
+      "etatAvancement": "EN_ATTENTE",
+      "poidsMax": 50,
+      "distance": 5800,
+      "lieuDepart": {
+        "nom": "Dakar",
+        "latitude": 14.6937,
+        "longitude": -17.4441
+      },
+      "lieuArrive": {
+        "nom": "Paris",
+        "latitude": 48.8566,
+        "longitude": 2.3522
+      },
+      "dateDepart": "2025-01-15",
+      "dateArrive": "2025-02-15",
+      "dateCreation": "2025-01-10"
+    },
+    {
+      "id": 2,
+      "numero": 100002,
+      "type": "AERIENNE",
+      "etatGlobal": "FERME",
+      "etatAvancement": "EN_COURS",
+      "poidsMax": 15,
+      "distance": 4200,
+      "lieuDepart": {
+        "nom": "Dakar",
+        "latitude": 14.6937,
+        "longitude": -17.4441
+      },
+      "lieuArrive": {
+        "nom": "Londres",
+        "latitude": 51.5074,
+        "longitude": -0.1278
+      },
+      "dateDepart": "2025-01-20",
+      "dateArrive": "2025-01-21",
+      "dateCreation": "2025-01-18"
+    }
+  ],
+  "colis": [
+    {
+      "id": 1,
+      "code": "COL001",
+      "nombre": 1,
+      "poids": 2.5,
+      "prix": 15000,
+      "typeProduit": "ALIMENTAIRE",
+      "etat": "EN_COURS",
+      "cargaisonId": 1,
+      "expediteur": {
+        "nom": "Dupont",
+        "prenom": "Jean",
+        "telephone": "+221771234567",
+        "email": "jean.dupont@email.com",
+        "adresse": "Dakar, Sénégal"
+      },
+      "destinataire": {
+        "nom": "Martin",
+        "prenom": "Marie",
+        "telephone": "+33612345678",
+        "email": "marie.martin@email.com",
+        "adresse": "Paris, France"
+      },
+      "dateCreation": "2025-01-12",
+      "dateArchivage": null
+    },
+    {
+      "id": 2,
+      "code": "COL002",
+      "nombre": 1,
+      "poids": 5.0,
+      "prix": 25000,
+      "typeProduit": "MATERIEL",
+      "etat": "ARRIVE",
+      "cargaisonId": 2,
+      "expediteur": {
+        "nom": "Société ABC",
+        "prenom": "",
+        "telephone": "+221334567890",
+        "email": "contact@abc.sn",
+        "adresse": "Dakar, Sénégal"
+      },
+      "destinataire": {
+        "nom": "Client XYZ",
+        "prenom": "",
+        "telephone": "+447890123456",
+        "email": "client@xyz.uk",
+        "adresse": "Londres, UK"
+      },
+      "dateCreation": "2025-01-19",
+      "dateArchivage": null
+    },
+    {
+      "id": 3,
+      "code": "COL003",
+      "nombre": 2,
+      "poids": 3.2,
+      "prix": 18000,
+      "typeProduit": "INCASSABLE",
+      "etat": "EN_ATTENTE",
+      "cargaisonId": null,
+      "expediteur": {
+        "nom": "Commerce Local",
+        "prenom": "",
+        "telephone": "+221775551234",
+        "email": "contact@commerce.sn",
+        "adresse": "Thiès, Sénégal"
+      },
+      "destinataire": {
+        "nom": "Diallo",
+        "prenom": "Aminata",
+        "telephone": "+221779998877",
+        "email": "aminata.diallo@email.com",
+        "adresse": "Dakar, Sénégal"
+      },
+      "dateCreation": "2025-01-25",
+      "dateArchivage": null
+    }
+  ],
+  "personnes": [
+    {
+      "id": 1,
+      "nom": "Dupont",
+      "prenom": "Jean",
+      "telephone": "+221771234567",
+      "email": "jean.dupont@email.com",
+      "adresse": "Dakar, Sénégal",
+      "type": "CLIENT"
+    },
+    {
+      "id": 2,
+      "nom": "Martin",
+      "prenom": "Marie",
+      "telephone": "+33612345678",
+      "email": "marie.martin@email.com",
+      "adresse": "Paris, France",
+      "type": "CLIENT"
+    },
+    {
+      "id": 3,
+      "nom": "Admin",
+      "prenom": "Système",
+      "telephone": "+221771112233",
+      "email": "admin@cargotrack.sn",
+      "adresse": "Dakar, Sénégal",
+      "type": "GESTIONNAIRE"
+    }
+  ],
+  "reçus": [
+    {
+      "id": 1,
+      "colisId": 1,
+      "numeroRecu": "REC001",
+      "montantTotal": 15000,
+      "dateEmission": "2025-01-12",
+      "expediteur": "Jean Dupont",
+      "destinataire": "Marie Martin"
+    },
+    {
+      "id": 2,
+      "colisId": 2,
+      "numeroRecu": "REC002",
+      "montantTotal": 25000,
+      "dateEmission": "2025-01-19",
+      "expediteur": "Société ABC",
+      "destinataire": "Client XYZ"
+    }
+  ]
+}
