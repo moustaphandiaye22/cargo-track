@@ -1,4 +1,5 @@
 import { promises as fs } from 'fs';
+import { CodeGenerator } from '../service/CodeGenerator';
 
 interface DatabaseData {
     cargaisons: any[];
@@ -85,7 +86,7 @@ export class DataManager {
     static async saveNewCargaison(cargaisonData: any): Promise<boolean> {
         const data = await this.loadData();
         cargaisonData.id = Math.max(...data.cargaisons.map(c => c.id), 0) + 1;
-        cargaisonData.numero = Math.floor(Math.random() * 1000000);
+        cargaisonData.numero = CodeGenerator.genererNumeroCargaison();
         cargaisonData.dateCreation = new Date().toISOString().split('T')[0];
         data.cargaisons.push(cargaisonData);
         return await this.saveData(data);

@@ -1,4 +1,76 @@
 <?php
+
+function genererMessage($colis) {
+    switch ($colis['etat']) {
+        case 'EN_COURS':
+            return 'Votre colis est en cours de transport';
+        case 'ARRIVE':
+            return 'Votre colis est arrivé à destination et prêt pour récupération';
+        case 'EN_ATTENTE':
+            return 'Votre colis est en attente de chargement dans la cargaison';
+        default:
+            return 'État du colis : ' . $colis['etat'];
+    }
+}
+
+function getTypeCargaison($cargaisonId, $data) {
+    if (!$cargaisonId || !isset($data['cargaisons'])) {
+        return 'Non assigné';
+    }
+    
+    foreach ($data['cargaisons'] as $cargaison) {
+        if ($cargaison['id'] == $cargaisonId) {
+            switch ($cargaison['type']) {
+                case 'MARITIME': return 'Maritime';
+                case 'AERIENNE': return 'Aérien';
+                case 'ROUTIERE': return 'Routier';
+                default: return $cargaison['type'];
+            }
+        }
+    }
+    
+    return 'Non trouvé';
+}
+
+function getCargaisonDetails($cargaisonId, $data) {
+    if (!$cargaisonId || !isset($data['cargaisons'])) {
+        return null;
+    }
+    
+    foreach ($data['cargaisons'] as $cargaison) {
+        if ($cargaison['id'] == $cargaisonId) {
+            return $cargaison;
+        }
+    }
+    
+    return null;
+}
+
+function getPositionActuelle($etat, $cargaison) {
+    if (!$cargaison) {
+        return null;
+    }
+    
+    $depart = $cargaison['lieuDepart'];
+    $arrivee = $cargaison['lieuArrive'];
+    
+    switch ($etat) {
+        case 'EN_ATTENTE':
+            return $depart;
+        case 'EN_COURS':
+            // Position intermédiaire (approximative)
+            return [
+                'nom' => 'En transit',
+                'latitude' => ($depart['latitude'] + $arrivee['latitude']) / 2,
+                'longitude' => ($depart['longitude'] + $arrivee['longitude']) / 2
+            ];
+        case 'ARRIVE':
+            return $arrivee;
+        default:
+            return $depart;
+    }
+}
+
 $routes = [
     [
         'method' => 'GET',
@@ -67,30 +139,33 @@ $routes = [
                 return;
             }
             
-            // Données de démonstration pour le suivi
-            $colis_demo = [
-                'COL001' => [
-                    'etat' => 'EN_COURS',
-                    'message' => 'Votre colis est en cours de transport maritime vers Paris',
-                    'expediteur' => 'Jean Dupont',
-                    'destinataire' => 'Marie Martin',
-                    'type_cargaison' => 'Maritime'
-                ],
-                'COL002' => [
-                    'etat' => 'ARRIVE',
-                    'message' => 'Votre colis est arrivé à destination et prêt pour récupération',
-                    'expediteur' => 'Société ABC',
-                    'destinataire' => 'Client XYZ',
-                    'type_cargaison' => 'Aérien'
-                ],
-                'COL003' => [
-                    'etat' => 'EN_ATTENTE',
-                    'message' => 'Votre colis est en attente de chargement dans la cargaison',
-                    'expediteur' => 'Commerce Local',
-                    'destinataire' => 'Famille Diallo',
-                    'type_cargaison' => 'Routier'
-                ]
-            ];
+            // Charger les données depuis database.json
+            $dbPath = dirname(__DIR__) . '/data/database.json';
+            $data = [];
+            if (file_exists($dbPath)) {
+                $data = json_decode(file_get_contents($dbPath), true);
+            }
+            
+            $colis_demo = [];
+            if (isset($data['colis'])) {
+                foreach ($data['colis'] as $colis) {
+                    $cargaison = getCargaisonDetails($colis['cargaisonId'], $data);
+                    $colis_demo[$colis['code']] = [
+                        'etat' => $colis['etat'],
+                        'message' => genererMessage($colis),
+                        'expediteur' => trim($colis['expediteur']['nom'] . ' ' . $colis['expediteur']['prenom']),
+                        'destinataire' => trim($colis['destinataire']['nom'] . ' ' . $colis['destinataire']['prenom']),
+                        'type_cargaison' => getTypeCargaison($colis['cargaisonId'], $data),
+                        'poids' => $colis['poids'] . ' kg',
+                        'dateCreation' => $colis['dateCreation'],
+                        'coordonnees' => $cargaison ? [
+                            'depart' => $cargaison['lieuDepart'],
+                            'arrivee' => $cargaison['lieuArrive'],
+                            'position_actuelle' => getPositionActuelle($colis['etat'], $cargaison)
+                        ] : null
+                    ];
+                }
+            }
             
             if (isset($colis_demo[strtoupper($code)])) {
                 echo json_encode([
@@ -136,7 +211,5 @@ $routes = [
     ]
 ];
 
-// Fusionner avec les routes API TypeScript
-$apiRoutes = require __DIR__ . '/api.routes.php';
-return array_merge($routes, $apiRoutes);
+return $routes;
 

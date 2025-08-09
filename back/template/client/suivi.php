@@ -6,6 +6,9 @@
     <title>Suivi de Colis - CargoTrack</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -61,6 +64,15 @@
         .status-pending {
             background: #ECF0F1;
             color: #95A5A6;
+        }
+        #map {
+            height: 400px;
+            border-radius: 1rem;
+        }
+        .map-container {
+            border: 2px solid #ECF0F1;
+            border-radius: 1rem;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -207,6 +219,30 @@
                 </div>
             </div>
 
+            <!-- Map Section -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <h3 class="text-2xl font-bold text-charcoal mb-6">
+                    <i class="fas fa-map-marked-alt text-coral mr-3"></i>Suivi en Temps Réel
+                </h3>
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+                <div class="mt-4 grid md:grid-cols-3 gap-4 text-sm">
+                    <div class="bg-light-gray rounded-lg p-3 text-center">
+                        <i class="fas fa-map-marker-alt text-emerald mb-2"></i>
+                        <div><strong>Départ:</strong> <span id="lieuDepart">-</span></div>
+                    </div>
+                    <div class="bg-light-gray rounded-lg p-3 text-center">
+                        <i class="fas fa-truck text-coral mb-2"></i>
+                        <div><strong>Position:</strong> <span id="positionActuelle">En transit</span></div>
+                    </div>
+                    <div class="bg-light-gray rounded-lg p-3 text-center">
+                        <i class="fas fa-flag-checkered text-golden mb-2"></i>
+                        <div><strong>Destination:</strong> <span id="lieuArrivee">-</span></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Timeline -->
             <div class="bg-white rounded-2xl shadow-xl p-8">
                 <h3 class="text-2xl font-bold text-charcoal mb-8">Historique de Livraison</h3>
@@ -342,11 +378,97 @@
     </footer>
 
     <script>
+        // Variables globales
+        let map;
+        let departMarker, arriveeMarker, positionMarker;
+        let routeLine;
+        
         // Mobile menu toggle
         document.getElementById('mobile-menu-btn').addEventListener('click', function() {
             const mobileMenu = document.getElementById('mobile-menu');
             mobileMenu.classList.toggle('hidden');
         });
+        
+        // Initialiser la carte
+        function initMap() {
+            // Créer la carte centrée sur le Sénégal
+            map = L.map('map').setView([14.6937, -17.4441], 6);
+            
+            // Ajouter les tuiles OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+        
+        // Afficher le trajet sur la carte
+        function afficherTrajet(coordonnees) {
+            if (!map || !coordonnees) return;
+            
+            // Nettoyer les anciens marqueurs et lignes
+            if (departMarker) map.removeLayer(departMarker);
+            if (arriveeMarker) map.removeLayer(arriveeMarker);
+            if (positionMarker) map.removeLayer(positionMarker);
+            if (routeLine) map.removeLayer(routeLine);
+            
+            const depart = coordonnees.depart;
+            const arrivee = coordonnees.arrivee;
+            const position = coordonnees.position_actuelle;
+            
+            // Marqueur de départ (vert)
+            departMarker = L.marker([depart.latitude, depart.longitude], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background: #4ECDC4; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>',
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                })
+            }).addTo(map).bindPopup(`<b>Départ:</b> ${depart.nom}`);
+            
+            // Marqueur d'arrivée (rouge)
+            arriveeMarker = L.marker([arrivee.latitude, arrivee.longitude], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background: #FF6B6B; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>',
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                })
+            }).addTo(map).bindPopup(`<b>Destination:</b> ${arrivee.nom}`);
+            
+            // Position actuelle (orange pulsante)
+            if (position) {
+                positionMarker = L.marker([position.latitude, position.longitude], {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div style="background: #FF8C00; width: 25px; height: 25px; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 12px rgba(255,140,0,0.5); animation: pulse 2s infinite;"></div><style>@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }</style>',
+                        iconSize: [25, 25],
+                        iconAnchor: [12.5, 12.5]
+                    })
+                }).addTo(map).bindPopup(`<b>Position actuelle:</b> ${position.nom}`);
+            }
+            
+            // Ligne de trajet
+            const routePoints = [
+                [depart.latitude, depart.longitude],
+                [arrivee.latitude, arrivee.longitude]
+            ];
+            
+            routeLine = L.polyline(routePoints, {
+                color: '#FF8C00',
+                weight: 4,
+                opacity: 0.7,
+                dashArray: '10, 10'
+            }).addTo(map);
+            
+            // Adapter la vue pour inclure tous les points
+            const group = new L.featureGroup([departMarker, arriveeMarker]);
+            if (positionMarker) group.addLayer(positionMarker);
+            map.fitBounds(group.getBounds().pad(0.1));
+            
+            // Mettre à jour les informations textuelles
+            document.getElementById('lieuDepart').textContent = depart.nom;
+            document.getElementById('lieuArrivee').textContent = arrivee.nom;
+            document.getElementById('positionActuelle').textContent = position ? position.nom : 'En préparation';
+        }
         
         // Sample tracking data
         const trackingData = {
@@ -406,12 +528,19 @@
             .then(response => response.json())
             .then(data => {
                 if (data.statut === 'succès') {
+                    // Initialiser la carte si ce n'est pas déjà fait
+                    if (!map) {
+                        initMap();
+                    }
+                    
                     // Afficher les résultats
                     document.getElementById('trackingCode').textContent = code;
                     document.getElementById('expediteur').textContent = data.data.expediteur || 'Non spécifié';
                     document.getElementById('destinataire').textContent = data.data.destinataire || 'Non spécifié';
-                    document.getElementById('poids').textContent = '2.5 kg'; // Valeur par défaut
-                    document.getElementById('dateEnvoi').textContent = new Date().toLocaleDateString('fr-FR');
+                    document.getElementById('poids').textContent = data.data.poids || '- kg';
+                    document.getElementById('dateEnvoi').textContent = data.data.dateCreation ? 
+                        new Date(data.data.dateCreation).toLocaleDateString('fr-FR') : 
+                        new Date().toLocaleDateString('fr-FR');
                     
                     // Définir le badge de statut
                     const statusBadge = document.getElementById('statusBadge');
@@ -426,6 +555,11 @@
                         statusBadge.className += 'bg-golden text-white';
                     }
                     
+                    // Afficher la carte avec le trajet
+                    if (data.data.coordonnees) {
+                        afficherTrajet(data.data.coordonnees);
+                    }
+                    
                     // Timeline simple
                     const timeline = document.getElementById('timeline');
                     timeline.innerHTML = `
@@ -435,8 +569,8 @@
                             </div>
                             <div class="flex-1">
                                 <h4 class="text-lg font-semibold text-charcoal">Colis expédié</h4>
-                                <p class="text-medium-gray">Dakar, Sénégal</p>
-                                <p class="text-sm text-medium-gray mt-1">${new Date().toLocaleDateString('fr-FR')}</p>
+                                <p class="text-medium-gray">${data.data.coordonnees ? data.data.coordonnees.depart.nom : 'Lieu de départ'}</p>
+                                <p class="text-sm text-medium-gray mt-1">${data.data.dateCreation ? new Date(data.data.dateCreation).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR')}</p>
                             </div>
                         </div>
                         <div class="timeline-item flex items-start">
@@ -453,6 +587,9 @@
                     
                     resultatSection.classList.remove('hidden');
                     resultatSection.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Démarrer les mises à jour en temps réel
+                    startRealTimeUpdates(code);
                 } else {
                     // Afficher "aucun résultat"
                     aucunResultatSection.classList.remove('hidden');
@@ -471,6 +608,50 @@
             document.getElementById('resultatSuivi').classList.add('hidden');
             document.getElementById('aucunResultat').classList.add('hidden');
             document.getElementById('codesuivi').focus();
+            
+            // Nettoyer la carte
+            if (map) {
+                if (departMarker) map.removeLayer(departMarker);
+                if (arriveeMarker) map.removeLayer(arriveeMarker);
+                if (positionMarker) map.removeLayer(positionMarker);
+                if (routeLine) map.removeLayer(routeLine);
+            }
+            
+            // Arrêter les mises à jour en temps réel
+            stopRealTimeUpdates();
+        }
+        
+        // Fonction de mise à jour automatique (simulée)
+        let updateInterval;
+        function startRealTimeUpdates(code) {
+            // Mettre à jour toutes les 30 secondes
+            updateInterval = setInterval(() => {
+                console.log('Mise à jour en temps réel pour:', code);
+                // On pourrait ici faire un appel AJAX pour récupérer la position mise à jour
+                // et simuler le mouvement du colis
+                updatePosition(code);
+            }, 30000);
+        }
+        
+        function stopRealTimeUpdates() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+        }
+        
+        function updatePosition(code) {
+            // Simulation d'une mise à jour de position
+            // Dans un vrai système, ceci ferait un appel vers l'API
+            if (positionMarker && map) {
+                const currentPos = positionMarker.getLatLng();
+                // Simulation d'un petit mouvement
+                const newLat = currentPos.lat + (Math.random() - 0.5) * 0.01;
+                const newLng = currentPos.lng + (Math.random() - 0.5) * 0.01;
+                positionMarker.setLatLng([newLat, newLng]);
+                
+                console.log(`Position mise à jour: ${newLat}, ${newLng}`);
+            }
         }
 
         // Allow Enter key to trigger search

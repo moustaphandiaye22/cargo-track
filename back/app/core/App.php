@@ -20,24 +20,5 @@ class App
         return self::$instances[$className];
     }
     
-    public static function set(string $className, $instance): void
-    {
-        self::$instances[$className] = $instance;
-    }
-    
-    /**
-     * Vérifie si une classe est enregistrée
-     */
-    public static function has(string $className): bool
-    {
-        return isset(self::$instances[$className]);
-    }
-    
-    /**
-     * Supprime une instance du conteneur
-     */
-    public static function remove(string $className): void
-    {
-        unset(self::$instances[$className]);
-    }
+
 }

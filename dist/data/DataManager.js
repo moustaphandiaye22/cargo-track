@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataManager = void 0;
 const fs_1 = require("fs");
+const CodeGenerator_1 = require("../service/CodeGenerator");
 class DataManager {
     static async loadData() {
         try {
@@ -67,7 +68,7 @@ class DataManager {
     static async saveNewCargaison(cargaisonData) {
         const data = await this.loadData();
         cargaisonData.id = Math.max(...data.cargaisons.map(c => c.id), 0) + 1;
-        cargaisonData.numero = Math.floor(Math.random() * 1000000);
+        cargaisonData.numero = CodeGenerator_1.CodeGenerator.genererNumeroCargaison();
         cargaisonData.dateCreation = new Date().toISOString().split('T')[0];
         data.cargaisons.push(cargaisonData);
         return await this.saveData(data);

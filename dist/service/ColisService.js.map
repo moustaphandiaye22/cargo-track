@@ -1,1 +1,0 @@
-{"version":3,"file":"ColisService.js","sourceRoot":"","sources":["../../typescript/service/ColisService.ts"],"names":[],"mappings":";;;AAGA,MAAa,YAAY;IAGrB,YAAY,KAAY;QACpB,IAAI,CAAC,KAAK,GAAG,KAAK,CAAC;IACvB,CAAC;IAED,OAAO;QACH,OAAO,0BAA0B,IAAI,CAAC,KAAK,CAAC,OAAO,EAAE,EAAE,CAAC;IAC5D,CAAC;CACJ;AAVD,oCAUC"}

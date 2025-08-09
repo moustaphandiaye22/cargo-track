@@ -12,19 +12,6 @@ class Session
         }
     }
     
-    public static function getInstance(): Session
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
-
-    public function set(string $key, $value): void
-    {
-        $_SESSION[$key] = $value;
-    }
-
     public static function get(string $key)
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -33,36 +20,7 @@ class Session
         return $_SESSION[$key] ?? null;
     }
 
-    public function destroy(): void
-    {
-        session_destroy();
-    }
 
-    public function unset(string $key): void
-    {
-        unset($_SESSION[$key]);
-    }
-
-    public function isset(string $key): bool
-    {
-        return isset($_SESSION[$key]);
-    }
-    
-    public function has(string $key): bool
-    {
-        return isset($_SESSION[$key]);
-    }
-    
-    public static function requireAuth(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        if (!isset($_SESSION['user'])) {
-            header('Location: /login');
-            exit();
-        }
-    }
     
     public static function isAuthenticated(): bool
     {

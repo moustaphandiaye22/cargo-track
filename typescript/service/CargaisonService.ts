@@ -8,6 +8,7 @@ import { TypeColis } from "../Enum/TypeColis";
 import { EtatGlobal } from "../Enum/EtatGlobal";
 import { EtatAvancement } from "../Enum/EtatAvancement";
 import { EtatColis } from "../Enum/EtatColis";
+import { CodeGenerator } from "./CodeGenerator";
 import { Recu } from "../entity/Recu";
 
 export class CargaisonService  implements InterfaceCargaison{
@@ -27,7 +28,7 @@ export class CargaisonService  implements InterfaceCargaison{
             this.cargaison.setType(this.type);
             this.cargaison.setEtatglobal(EtatGlobal.OUVERT);
             this.cargaison.setEtatAvancement(EtatAvancement.EN_ATTENTE);
-            this.cargaison.setNumero(Math.floor(Math.random() * 1000000));
+            this.cargaison.setNumero(CodeGenerator.genererNumeroCargaison());
             console.log(`Cargaison ${this.type} créée avec succès`);
         }catch(error){
             console.error('Erreur lors de la création de la cargaison',error);
@@ -54,7 +55,7 @@ export class CargaisonService  implements InterfaceCargaison{
                 return colis;
             }
             
-            colis.setCode(this.genererCodeColis());
+            colis.setCode(CodeGenerator.genererCodeColis());
             colis.setEtat(EtatColis.EN_ATTENTE);
             colis.setDateCreation(new Date());
             
@@ -180,12 +181,7 @@ export class CargaisonService  implements InterfaceCargaison{
     }
 
 
-    private genererCodeColis(): string {
-        const timestamp = Date.now().toString();
-        const random = Math.floor(Math.random() * 1000).toString();
-        const paddedRandom = ('000' + random).slice(-3);
-        return `COL${timestamp}${paddedRandom}`;
-    }
+
 
     fermerCargaison(): boolean {
         if(!this.cargaison) {
@@ -278,7 +274,7 @@ export class CargaisonService  implements InterfaceCargaison{
 
     genererRecu(colis: Colis, expediteur: Personne, destinataire: Personne): Recu {
         const recu = new Recu();
-        recu.setNumerorecu(this.genererNumeroRecu());
+        recu.setNumerorecu(CodeGenerator.genererCodeRecu());
         recu.setColis(colis);
         recu.setExpediteur(expediteur);
         recu.setDestinataire(destinataire);
@@ -287,12 +283,7 @@ export class CargaisonService  implements InterfaceCargaison{
         return recu;
     }
 
-    private genererNumeroRecu(): string {
-        const timestamp = Date.now().toString();
-        const random = Math.floor(Math.random() * 1000).toString();
-        const paddedRandom = ('000' + random).slice(-3);
-        return `REC${timestamp}${paddedRandom}`;
-    }
+
 
     private calculerMontantTotal(colis: Colis): number {
         const fraisBase = this.calculerFrais();

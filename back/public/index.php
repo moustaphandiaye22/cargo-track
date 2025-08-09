@@ -4,18 +4,15 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Démarrer la session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Vérifier si vendor/autoload.php existe
 $autoloadPath = dirname(__DIR__, 2) . '/vendor/autoload.php';
 if (file_exists($autoloadPath)) {
     require_once $autoloadPath;
 }
 
-// Chargement des classes core
 require_once dirname(__DIR__) . '/app/core/App.php';
 require_once dirname(__DIR__) . '/app/core/Router.php';
 require_once dirname(__DIR__) . '/app/core/Session.php';

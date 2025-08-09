@@ -21,7 +21,6 @@ export declare class CargaisonService implements InterfaceCargaison {
     rechercherColis(code: string): Colis;
     rechecherCargaison(code: string, lieuDepart: Coordonnee, lieuArrive: Coordonnee, datedepart: Date, datedarrive: Date, type: TypeCargaison): Cargaison;
     enregistrerClient(personne: Personne): Personne;
-    private genererCodeColis;
     fermerCargaison(): boolean;
     rouvrirCargaison(): boolean;
     recupererColis(code: string): boolean;
@@ -30,7 +29,6 @@ export declare class CargaisonService implements InterfaceCargaison {
     annulerColis(code: string): boolean;
     changerEtatColis(code: string, nouvelEtat: EtatColis): boolean;
     genererRecu(colis: Colis, expediteur: Personne, destinataire: Personne): Recu;
-    private genererNumeroRecu;
     private calculerMontantTotal;
     suivreColis(code: string): {
         etat: EtatColis | null;

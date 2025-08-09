@@ -8,6 +8,7 @@ const TypeColis_1 = require("../Enum/TypeColis");
 const EtatGlobal_1 = require("../Enum/EtatGlobal");
 const EtatAvancement_1 = require("../Enum/EtatAvancement");
 const EtatColis_1 = require("../Enum/EtatColis");
+const CodeGenerator_1 = require("./CodeGenerator");
 const Recu_1 = require("../entity/Recu");
 class CargaisonService {
     constructor(type) {
@@ -20,7 +21,7 @@ class CargaisonService {
             this.cargaison.setType(this.type);
             this.cargaison.setEtatglobal(EtatGlobal_1.EtatGlobal.OUVERT);
             this.cargaison.setEtatAvancement(EtatAvancement_1.EtatAvancement.EN_ATTENTE);
-            this.cargaison.setNumero(Math.floor(Math.random() * 1000000));
+            this.cargaison.setNumero(CodeGenerator_1.CodeGenerator.genererNumeroCargaison());
             console.log(`Cargaison ${this.type} créée avec succès`);
         }
         catch (error) {
@@ -45,7 +46,7 @@ class CargaisonService {
                 console.log("Erreur: Les produits chimiques ne peuvent pas être transportés par cargaison routière!");
                 return colis;
             }
-            colis.setCode(this.genererCodeColis());
+            colis.setCode(CodeGenerator_1.CodeGenerator.genererCodeColis());
             colis.setEtat(EtatColis_1.EtatColis.EN_ATTENTE);
             colis.setDateCreation(new Date());
             if (colis.getPrix() < 10000) {
@@ -156,12 +157,6 @@ class CargaisonService {
     enregistrerClient(personne) {
         return personne;
     }
-    genererCodeColis() {
-        const timestamp = Date.now().toString();
-        const random = Math.floor(Math.random() * 1000).toString();
-        const paddedRandom = ('000' + random).slice(-3);
-        return `COL${timestamp}${paddedRandom}`;
-    }
     fermerCargaison() {
         if (!this.cargaison) {
             console.log("Aucune cargaison à fermer");
@@ -242,19 +237,13 @@ class CargaisonService {
     }
     genererRecu(colis, expediteur, destinataire) {
         const recu = new Recu_1.Recu();
-        recu.setNumerorecu(this.genererNumeroRecu());
+        recu.setNumerorecu(CodeGenerator_1.CodeGenerator.genererCodeRecu());
         recu.setColis(colis);
         recu.setExpediteur(expediteur);
         recu.setDestinataire(destinataire);
         recu.setMontanttotal(this.calculerMontantTotal(colis));
         console.log("Reçu généré pour le colis:", colis.getCode());
         return recu;
-    }
-    genererNumeroRecu() {
-        const timestamp = Date.now().toString();
-        const random = Math.floor(Math.random() * 1000).toString();
-        const paddedRandom = ('000' + random).slice(-3);
-        return `REC${timestamp}${paddedRandom}`;
     }
     calculerMontantTotal(colis) {
         const fraisBase = this.calculerFrais();

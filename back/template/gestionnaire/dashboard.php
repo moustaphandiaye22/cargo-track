@@ -1,3 +1,16 @@
+<?php
+// Charger les fonctions utilitaires
+require_once __DIR__ . '/../../utils/dashboard_helpers.php';
+
+// Charger les données depuis database.json
+$data = loadDatabaseData();
+$stats = calculerStatistiques($data);
+
+// Gestion d'erreur si les données ne peuvent pas être chargées
+if (!$data) {
+    $errorMessage = "Erreur : Impossible de charger les données. Vérifiez que le fichier database.json existe et est accessible.";
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -78,6 +91,15 @@
                 <i class="fas fa-tachometer-alt mr-3"></i>Tableau de Bord Gestionnaire
             </h1>
             <p class="text-xl opacity-90">Gérez vos cargaisons, colis et clients en temps réel</p>
+            
+            <?php if (isset($errorMessage)): ?>
+            <div class="mt-4 bg-red-500 bg-opacity-20 border border-red-300 rounded-lg p-4">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span><?php echo htmlspecialchars($errorMessage); ?></span>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
     </section>
 
@@ -89,8 +111,8 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-medium-gray text-sm font-semibold">Colis Actifs</p>
-                            <p class="text-3xl font-bold text-charcoal">156</p>
-                            <p class="text-emerald text-sm">+12% ce mois</p>
+                            <p class="text-3xl font-bold text-charcoal"><?php echo formatNumber($stats['colis_actifs']); ?></p>
+                            <p class="text-emerald text-sm"><?php echo calculerVariation('colis_actifs'); ?>% ce mois</p>
                         </div>
                         <div class="w-12 h-12 bg-coral rounded-lg flex items-center justify-center">
                             <i class="fas fa-box text-white text-xl"></i>
@@ -102,8 +124,8 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-medium-gray text-sm font-semibold">Cargaisons</p>
-                            <p class="text-3xl font-bold text-charcoal">23</p>
-                            <p class="text-emerald text-sm">+5% ce mois</p>
+                            <p class="text-3xl font-bold text-charcoal"><?php echo formatNumber($stats['nombre_cargaisons']); ?></p>
+                            <p class="text-emerald text-sm"><?php echo calculerVariation('nombre_cargaisons'); ?>% ce mois</p>
                         </div>
                         <div class="w-12 h-12 bg-emerald rounded-lg flex items-center justify-center">
                             <i class="fas fa-ship text-white text-xl"></i>
@@ -115,7 +137,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-medium-gray text-sm font-semibold">En Transit</p>
-                            <p class="text-3xl font-bold text-charcoal">89</p>
+                            <p class="text-3xl font-bold text-charcoal"><?php echo formatNumber($stats['colis_en_transit']); ?></p>
                             <p class="text-golden text-sm">Temps réel</p>
                         </div>
                         <div class="w-12 h-12 bg-golden rounded-lg flex items-center justify-center">
@@ -128,8 +150,8 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-medium-gray text-sm font-semibold">Clients</p>
-                            <p class="text-3xl font-bold text-charcoal">342</p>
-                            <p class="text-emerald text-sm">+8% ce mois</p>
+                            <p class="text-3xl font-bold text-charcoal"><?php echo formatNumber($stats['nombre_clients']); ?></p>
+                            <p class="text-emerald text-sm"><?php echo calculerVariation('nombre_clients'); ?>% ce mois</p>
                         </div>
                         <div class="w-12 h-12 bg-sunset rounded-lg flex items-center justify-center">
                             <i class="fas fa-users text-white text-xl"></i>
@@ -186,54 +208,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-light-gray">
-                                <tr class="hover:bg-light-gray transition-colors">
-                                    <td class="px-6 py-4 font-semibold text-charcoal">CG001</td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-3 py-1 bg-emerald text-white rounded-full text-sm">Maritime</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-medium-gray">Dakar → Paris</td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-3 py-1 bg-coral text-white rounded-full text-sm">En Transit</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-medium-gray">45/50</td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex space-x-2">
-                                            <button class="text-emerald hover:bg-emerald hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="text-golden hover:bg-golden hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="text-coral hover:bg-coral hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="hover:bg-light-gray transition-colors">
-                                    <td class="px-6 py-4 font-semibold text-charcoal">CG002</td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-3 py-1 bg-golden text-white rounded-full text-sm">Aérien</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-medium-gray">Dakar → Londres</td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-3 py-1 bg-emerald text-white rounded-full text-sm">Arrivé</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-medium-gray">12/15</td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex space-x-2">
-                                            <button class="text-emerald hover:bg-emerald hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="text-golden hover:bg-golden hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="text-coral hover:bg-coral hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-archive"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <?php echo genererTableauCargaisons($data); ?>
                             </tbody>
                         </table>
                     </div>
@@ -265,50 +240,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-light-gray">
-                                <tr class="hover:bg-light-gray transition-colors">
-                                    <td class="px-6 py-4 font-semibold text-charcoal">PKG001</td>
-                                    <td class="px-6 py-4 text-medium-gray">Jean Dupont</td>
-                                    <td class="px-6 py-4 text-medium-gray">Marie Martin</td>
-                                    <td class="px-6 py-4 text-medium-gray">2.5 kg</td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-3 py-1 bg-coral text-white rounded-full text-sm">En Transit</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex space-x-2">
-                                            <button class="text-emerald hover:bg-emerald hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="text-golden hover:bg-golden hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="text-coral hover:bg-coral hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="hover:bg-light-gray transition-colors">
-                                    <td class="px-6 py-4 font-semibold text-charcoal">PKG002</td>
-                                    <td class="px-6 py-4 text-medium-gray">Société ABC</td>
-                                    <td class="px-6 py-4 text-medium-gray">Client XYZ</td>
-                                    <td class="px-6 py-4 text-medium-gray">15.2 kg</td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-3 py-1 bg-emerald text-white rounded-full text-sm">Livré</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex space-x-2">
-                                            <button class="text-emerald hover:bg-emerald hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="text-golden hover:bg-golden hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="text-medium-gray hover:bg-medium-gray hover:text-white px-3 py-1 rounded transition-all">
-                                                <i class="fas fa-archive"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <?php echo genererTableauColis($data); ?>
                             </tbody>
                         </table>
                     </div>
@@ -328,55 +260,7 @@
                     </div>
 
                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                            <div class="flex items-center mb-4">
-                                <div class="w-12 h-12 bg-coral rounded-full flex items-center justify-center mr-4">
-                                    <i class="fas fa-user text-white"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-charcoal">Jean Dupont</h3>
-                                    <p class="text-medium-gray text-sm">Client Premium</p>
-                                </div>
-                            </div>
-                            <div class="space-y-2 text-sm">
-                                <p class="text-medium-gray"><i class="fas fa-envelope text-coral mr-2"></i>jean.dupont@email.com</p>
-                                <p class="text-medium-gray"><i class="fas fa-phone text-coral mr-2"></i>+221 77 123 45 67</p>
-                                <p class="text-medium-gray"><i class="fas fa-box text-coral mr-2"></i>12 colis envoyés</p>
-                            </div>
-                            <div class="mt-4 flex space-x-2">
-                                <button class="flex-1 bg-emerald text-white py-2 rounded-lg text-sm hover:bg-opacity-90 transition-all">
-                                    <i class="fas fa-eye mr-1"></i>Voir
-                                </button>
-                                <button class="flex-1 bg-golden text-white py-2 rounded-lg text-sm hover:bg-opacity-90 transition-all">
-                                    <i class="fas fa-edit mr-1"></i>Modifier
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                            <div class="flex items-center mb-4">
-                                <div class="w-12 h-12 bg-emerald rounded-full flex items-center justify-center mr-4">
-                                    <i class="fas fa-building text-white"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-charcoal">Société ABC</h3>
-                                    <p class="text-medium-gray text-sm">Entreprise</p>
-                                </div>
-                            </div>
-                            <div class="space-y-2 text-sm">
-                                <p class="text-medium-gray"><i class="fas fa-envelope text-coral mr-2"></i>contact@abc.com</p>
-                                <p class="text-medium-gray"><i class="fas fa-phone text-coral mr-2"></i>+221 33 456 78 90</p>
-                                <p class="text-medium-gray"><i class="fas fa-box text-coral mr-2"></i>45 colis envoyés</p>
-                            </div>
-                            <div class="mt-4 flex space-x-2">
-                                <button class="flex-1 bg-emerald text-white py-2 rounded-lg text-sm hover:bg-opacity-90 transition-all">
-                                    <i class="fas fa-eye mr-1"></i>Voir
-                                </button>
-                                <button class="flex-1 bg-golden text-white py-2 rounded-lg text-sm hover:bg-opacity-90 transition-all">
-                                    <i class="fas fa-edit mr-1"></i>Modifier
-                                </button>
-                            </div>
-                        </div>
+                        <?php echo genererCarteClients($data); ?>
                     </div>
                 </div>
 
