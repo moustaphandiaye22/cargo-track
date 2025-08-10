@@ -242,7 +242,14 @@ function genererCarteClients($data) {
     foreach ($clients as $client) {
         // Compter les colis envoyés par ce client
         $colisEnvoyes = count(array_filter($colis, function($col) use ($client) {
-            // return $col['expediteur']['email'] === $client['email'];
+            // Utiliser plusieurs critères pour identifier le client (nom, prénom, téléphone)
+            $expediteur = $col['expediteur'];
+            return ($expediteur['nom'] === $client['nom'] && 
+                    $expediteur['prenom'] === $client['prenom']) ||
+                   (isset($expediteur['telephone']) && isset($client['telephone']) && 
+                    $expediteur['telephone'] === $client['telephone']) ||
+                   (isset($expediteur['email']) && isset($client['email']) && 
+                    $expediteur['email'] === $client['email']);
         }));
         
         $nomComplet = trim($client['prenom'] . ' ' . $client['nom']);

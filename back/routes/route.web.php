@@ -1,5 +1,110 @@
 <?php
 
+// Route pour ajouter un nouveau colis
+$routes[] = [
+    'method' => 'POST',
+    'path' => '/api/colis',
+    'action' => function() {
+        header('Content-Type: application/json');
+        $required = [
+            'code', 'nombre', 'poids', 'prix', 'typeproduit', 'etat',
+            'expediteur_nom', 'expediteur_prenom', 'expediteur_telephone', 'expediteur_adresse',
+            'destinataire_nom', 'destinataire_prenom', 'destinataire_telephone', 'destinataire_adresse',
+            'cargaison_id', 'dateCreation'
+        ];
+        foreach ($required as $field) {
+            if (empty($_POST[$field])) {
+                echo json_encode(['statut' => 'erreur', 'message' => "Champ manquant : $field"]);
+                return;
+            }
+        }
+
+        $dbPath = dirname(__DIR__) . '/data/database.json';
+        $data = file_exists($dbPath) ? json_decode(file_get_contents($dbPath), true) : [];
+        if (!isset($data['colis'])) $data['colis'] = [];
+
+        $nouveauColis = [
+            'code' => $_POST['code'],
+            'nombre' => (int)$_POST['nombre'],
+            'poids' => (float)$_POST['poids'],
+            'prix' => (float)$_POST['prix'],
+            'typeproduit' => $_POST['typeproduit'],
+            'etat' => $_POST['etat'],
+            'expediteur' => [
+                'nom' => $_POST['expediteur_nom'],
+                'prenom' => $_POST['expediteur_prenom'],
+                'telephone' => $_POST['expediteur_telephone'],
+                'adresse' => $_POST['expediteur_adresse']
+            ],
+            'destinataire' => [
+                'nom' => $_POST['destinataire_nom'],
+                'prenom' => $_POST['destinataire_prenom'],
+                'telephone' => $_POST['destinataire_telephone'],
+                'adresse' => $_POST['destinataire_adresse']
+            ],
+            'cargaisonId' => (int)$_POST['cargaison_id'],
+            'dateCreation' => $_POST['dateCreation'],
+            'dateArchivage' => $_POST['dateArchivage'] ?? null
+        ];
+
+        $data['colis'][] = $nouveauColis;
+
+        // Associer le colis à la cargaison correspondante
+        if (isset($data['cargaisons'])) {
+            foreach ($data['cargaisons'] as &$cargaison) {
+                if ($cargaison['id'] == $nouveauColis['cargaisonId']) {
+                    if (!isset($cargaison['colis'])) $cargaison['colis'] = [];
+                    $cargaison['colis'][] = $nouveauColis['code'];
+                }
+            }
+        }
+
+        file_put_contents($dbPath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+        echo json_encode(['statut' => 'succès', 'message' => 'Colis ajouté', 'colis' => $nouveauColis]);
+    }
+];
+// Route pour ajouter une nouvelle cargaison
+$routes[] = [
+    'method' => 'POST',
+    'path' => '/api/cargaison',
+    'action' => function() {
+        header('Content-Type: application/json');
+        $required = ['type_transport', 'capacite', 'ville_depart', 'ville_arrivee', 'date_depart', 'date_arrivee'];
+        foreach ($required as $field) {
+            if (empty($_POST[$field])) {
+                echo json_encode(['statut' => 'erreur', 'message' => "Champ manquant : $field"]);
+                return;
+            }
+        }
+
+        $dbPath = dirname(__DIR__) . '/data/database.json';
+        $data = file_exists($dbPath) ? json_decode(file_get_contents($dbPath), true) : [];
+        if (!isset($data['cargaisons'])) $data['cargaisons'] = [];
+
+        // Générer un nouvel ID unique
+        $newId = count($data['cargaisons']) > 0 ? max(array_column($data['cargaisons'], 'id')) + 1 : 1;
+
+        $nouvelleCargaison = [
+            'id' => $newId,
+            'type' => $_POST['type_transport'],
+            'capacite' => (int)$_POST['capacite'],
+            'lieuDepart' => $_POST['ville_depart'],
+            'lieuArrive' => $_POST['ville_arrivee'],
+            'dateDepart' => $_POST['date_depart'],
+            'dateArrivee' => $_POST['date_arrivee'],
+            'etat' => 'EN_ATTENTE',
+            'colis' => []
+        ];
+
+        $data['cargaisons'][] = $nouvelleCargaison;
+        file_put_contents($dbPath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+        echo json_encode(['statut' => 'succès', 'message' => 'Cargaison ajoutée', 'cargaison' => $nouvelleCargaison]);
+    }
+];
+
+
 function genererMessage($colis) {
     switch ($colis['etat']) {
         case 'EN_COURS':

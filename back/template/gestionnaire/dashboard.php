@@ -1,3 +1,117 @@
+    <!-- Modal Nouveau Colis -->
+    <div id="modalNouveauColis" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-charcoal">Nouveau Colis</h3>
+                <button onclick="closeModal('modalNouveauColis')" class="text-medium-gray hover:text-coral text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form class="space-y-3" method="POST" action="/api/colis" id="formNouveauColis">
+                <div class="grid md:grid-cols-2 gap-4">
+                   <div>
+                        <label class="block text-charcoal font-semibold mb-2">Date de création</label>
+                        <input name="dateCreation" type="date" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Nombre</label>
+                        <input name="nombre" type="number" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Nombre d'articles" required>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Poids (kg)</label>
+                        <input name="poids" type="number" step="0.01" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Poids" required>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Prix (FCFA)</label>
+                        <input name="prix" type="number" step="0.01" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Prix" required>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Type de Colis</label>
+                        <select name="typeproduit" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                            <option value="ALIMENTAIRE">Alimentaire</option>
+                            <option value="CHIMIQUE">Chimique</option>
+                            <option value="FRAGILE">Fragile</option>
+                            <option value="INCASSABLE">Incassable</option>
+                            <option value="MATERIEL">Matériel</option>
+                            <option value="AUTRES">Autres</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">État</label>
+                        <select name="etat" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                            <option value="EN_ATTENTE">En attente</option>
+                            <option value="EN_COURS">En cours</option>
+                            <option value="ARRIVE">Arrivé</option>
+                            <option value="RECUPERE">Récupéré</option>
+                            <option value="PERDU">Perdu</option>
+                            <option value="ARCHIVE">Archivé</option>
+                            <option value="ANNULE">Annulé</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Expéditeur - Nom</label>
+                        <input name="expediteur_nom" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Nom expéditeur" required>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Expéditeur - Prénom</label>
+                        <input name="expediteur_prenom" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Prénom expéditeur" required>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Expéditeur - Téléphone</label>
+                        <input name="expediteur_telephone" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Téléphone expéditeur" required>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Expéditeur - Adresse</label>
+                        <input name="expediteur_adresse" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Adresse expéditeur" required>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Destinataire - Nom</label>
+                        <input name="destinataire_nom" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Nom destinataire" required>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Destinataire - Prénom</label>
+                        <input name="destinataire_prenom" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Prénom destinataire" required>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Destinataire - Téléphone</label>
+                        <input name="destinataire_telephone" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Téléphone destinataire" required>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Destinataire - Adresse</label>
+                        <input name="destinataire_adresse" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Adresse destinataire" required>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-1 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Cargaison associée (ID)</label>
+                        <input name="cargaison_id" type="number" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="ID de la cargaison" required>
+                    </div>
+                </div>
+                    
+                   
+                <div class="flex justify-end space-x-4 mt-8">
+                    <button type="button" onclick="closeModal('modalNouveauColis')" class="px-6 py-3 border border-light-gray text-medium-gray rounded-lg hover:bg-light-gray transition-all">
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                        Créer Colis
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 <?php
 // Charger les fonctions utilitaires
 require_once __DIR__ . '/../../utils/dashboard_helpers.php';
@@ -285,13 +399,7 @@ if (!$data) {
                             <p class="text-medium-gray text-sm">Enregistrer un nouveau colis dans le système</p>
                         </button>
 
-                        <button onclick="openModal('modalNouveauClient')" class="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all text-center group">
-                            <div class="w-16 h-16 bg-golden rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                                <i class="fas fa-user-plus text-white text-2xl"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-charcoal mb-2">Nouveau Client</h3>
-                            <p class="text-medium-gray text-sm">Ajouter un nouveau client à la base de données</p>
-                        </button>
+                       
                     </div>
                 </div>
             </div>
@@ -309,41 +417,91 @@ if (!$data) {
                 </button>
             </div>
             
-            <form class="space-y-4">
+            <form class="space-y-4" method="POST" action="/api/cargaison" id="formNouvelleCargaison">
                 <div class="grid md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-charcoal font-semibold mb-2">Type de Transport</label>
-                        <select class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none">
-                            <option>Maritime</option>
-                            <option>Aérien</option>
-                            <option>Routier</option>
+                        <label class="block text-charcoal font-semibold mb-2">Type de Cargaison</label>
+                        <select name="type" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                            <option value="MARITIME">Maritime</option>
+                            <option value="AERIENNE">Aérien</option>
+                            <option value="ROUTIERE">Routier</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-charcoal font-semibold mb-2">Capacité (colis)</label>
-                        <input type="number" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="50">
+                        <label class="block text-charcoal font-semibold mb-2">Poids Max (kg)</label>
+                        <input name="poidsMax" type="number" step="0.01" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Poids maximum" required>
                     </div>
+                </div>
+                    
+               
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Prix Total (FCFA)</label>
+                        <input name="prixtotal" type="number" step="0.01" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Prix total" required>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Distance (km)</label>
+                        <input name="distance" type="number" step="0.01" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Distance" required>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">État d'Avancement</label>
+                        <select name="etatAvancement" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                            <option value="EN_COURS">En cours</option>
+                            <option value="ARRIVE">Arrivé</option>
+                            <option value="EN_ATTENTE">En attente</option>
+                            <option value="EN_RETARD">En retard</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">État Global</label>
+                        <select name="etatglobal" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                            <option value="OUVERT">Ouvert</option>
+                            <option value="FERME">Fermé</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Date de Départ</label>
+                        <input name="datedepart" type="date" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Date d'Arrivée</label>
+                        <input name="datedarrive" type="date" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Coordonnée Départ (Latitude)</label>
+                        <input name="coord_depart_lat" type="number" step="0.000001" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Latitude départ" required>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Coordonnée Départ (Longitude)</label>
+                        <input name="coord_depart_long" type="number" step="0.000001" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Longitude départ" required>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Coordonnée Arrivée (Latitude)</label>
+                        <input name="coord_arrive_lat" type="number" step="0.000001" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Latitude arrivée" required>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-2">Coordonnée Arrivée (Longitude)</label>
+                        <input name="coord_arrive_long" type="number" step="0.000001" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Longitude arrivée" required>
+                    </div>
+                </div>
                 </div>
                 
                 <div class="grid md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-charcoal font-semibold mb-2">Ville de Départ</label>
-                        <input type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Dakar">
+                        <input name="ville_depart" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Dakar" required>
                     </div>
                     <div>
                         <label class="block text-charcoal font-semibold mb-2">Ville d'Arrivée</label>
-                        <input type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Paris">
-                    </div>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Date de Départ</label>
-                        <input type="date" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Date d'Arrivée Estimée</label>
-                        <input type="date" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none">
+                        <input name="ville_arrivee" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Paris" required>
                     </div>
                 </div>
                 
