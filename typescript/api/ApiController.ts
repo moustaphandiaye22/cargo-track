@@ -3,13 +3,16 @@ import { DataManager } from '../data/DataManager';
 import { TypeCargaison } from '../Enum/TypeCargaison';
 import { TypeColis } from '../Enum/TypeColis';
 import { EtatColis } from '../Enum/EtatColis';
+import { TypePersonne } from '../Enum/TypePersonne';
+import { EtatGlobal } from '../Enum/EtatGlobal';
+import { EtatAvancement } from '../Enum/EtatAvancement';
 import { Colis } from '../entity/Colis';
 import { Personne } from '../entity/Personne';
 
 export class ApiController {
     
     // API pour le suivi des colis
-    static async suivreColis(code: string): Promise<{statut: string, data?: any, message?: string}> {
+    static async suivreColis(code: string): Promise<{statut: string, data?: object, message?: string}> {
         try {
             const colisData = await DataManager.getColisByCode(code);
             
@@ -45,7 +48,6 @@ export class ApiController {
         }
     }
 
-    // API pour créer une nouvelle cargaison
     static async creerCargaison(data: {
         type: string,
         capacite: number,
@@ -53,24 +55,27 @@ export class ApiController {
         lieuArrive: string,
         dateDepart: string,
         dateArrive: string
-    }): Promise<{statut: string, data?: any, message?: string}> {
+    }): Promise<{statut: string, data?: object, message?: string}> {
         try {
             const typeCargaison = data.type.toUpperCase() as TypeCargaison;
             
-            // Utiliser le service existant pour la logique métier
             const service = new CargaisonService(typeCargaison);
             service.creerCargaison();
             
-            // Sauvegarder dans le JSON
             const cargaisonData = {
+                id: 0, // sera assigné par DataManager
+                numero: 0, // sera assigné par DataManager
                 type: typeCargaison,
-                etatGlobal: 'OUVERT',
-                etatAvancement: 'EN_ATTENTE',
+                etatglobal: EtatGlobal.OUVERT,
+                etatAvancement: EtatAvancement.EN_ATTENTE,
                 poidsMax: data.capacite,
+                prixtotal: 0,
+                distance: 0,
                 lieuDepart: { nom: data.lieuDepart },
                 lieuArrive: { nom: data.lieuArrive },
-                dateDepart: data.dateDepart,
-                dateArrive: data.dateArrive
+                datedepart: data.dateDepart,
+                datedarrive: data.dateArrive,
+                dateCreation: new Date().toISOString().split('T')[0]
             };
             
             const success = await DataManager.saveNewCargaison(cargaisonData);
@@ -98,20 +103,18 @@ export class ApiController {
         }
     }
 
-    // API pour ajouter un colis
     static async ajouterColis(data: {
         typeProduit: string,
         poids: number,
         prix: number,
-        expediteur: any,
-        destinataire: any,
+        expediteur: {nom: string, prenom: string, telephone: string, adresse: string, email: string, password: string, type: TypePersonne},
+        destinataire: {nom: string, prenom: string, telephone: string, adresse: string, email: string, password: string, type: TypePersonne},
         typeCargaison: string
-    }): Promise<{statut: string, data?: any, message?: string}> {
+    }): Promise<{statut: string, data?: object, message?: string}> {
         try {
             const typeCargaison = data.typeCargaison.toUpperCase() as TypeCargaison;
             const typeProduit = data.typeProduit.toUpperCase() as TypeColis;
             
-            // Utiliser le service existant pour la validation
             const service = new CargaisonService(typeCargaison);
             
             const colis = new Colis();
@@ -119,21 +122,26 @@ export class ApiController {
             colis.setPoids(data.poids);
             colis.setPrix(data.prix);
             
-            // Appliquer la logique métier du service
             const result = service.ajouterproduit(colis);
             
-            // Sauvegarder dans le JSON
             const colisData = {
+                id: 0, // sera assigné par DataManager
                 code: result.getCode(),
                 nombre: 1,
                 poids: data.poids,
                 prix: data.prix,
-                typeProduit: typeProduit,
-                etat: 'EN_ATTENTE',
-                expediteur: data.expediteur,
-                destinataire: data.destinataire,
+                typeproduit: typeProduit,
+                etat: 'EN_ATTENTE' as EtatColis,
+                expediteur: {
+                    id: 0,
+                    ...data.expediteur
+                },
+                destinataire: {
+                    id: 0,
+                    ...data.destinataire
+                },
                 dateCreation: new Date().toISOString().split('T')[0],
-                cargaisonId: null
+                cargaisonId: undefined
             };
             
             const success = await DataManager.saveNewColis(colisData);
@@ -161,8 +169,7 @@ export class ApiController {
         }
     }
 
-    // API pour obtenir toutes les cargaisons
-    static async getAllCargaisons(): Promise<{statut: string, data?: any[], message?: string}> {
+    static async getAllCargaisons(): Promise<{statut: string, data?: object[], message?: string}> {
         try {
             const cargaisons = await DataManager.getAllCargaisons();
             return {
@@ -171,12 +178,12 @@ export class ApiController {
                     id: c.id,
                     numero: c.numero,
                     type: c.type,
-                    etat: c.etatGlobal,
+                    etat: c.etatglobal,
                     avancement: c.etatAvancement,
                     lieuDepart: c.lieuDepart?.nom || 'Non défini',
                     lieuArrive: c.lieuArrive?.nom || 'Non défini',
-                    dateDepart: c.dateDepart,
-                    dateArrive: c.dateArrive
+                    dateDepart: c.datedepart,
+                    dateArrive: c.datedarrive
                 }))
             };
         } catch (error) {
@@ -188,8 +195,7 @@ export class ApiController {
         }
     }
 
-    // API pour obtenir tous les colis
-    static async getAllColis(): Promise<{statut: string, data?: any[], message?: string}> {
+    static async getAllColis(): Promise<{statut: string, data?: object[], message?: string}> {
         try {
             const colis = await DataManager.getAllColis();
             return {
@@ -197,7 +203,7 @@ export class ApiController {
                 data: colis.map(c => ({
                     id: c.id,
                     code: c.code,
-                    typeProduit: c.typeProduit,
+                    typeProduit: c.typeproduit,
                     etat: c.etat,
                     poids: c.poids,
                     prix: c.prix,
@@ -215,19 +221,15 @@ export class ApiController {
         }
     }
 
-    // API pour changer l'état d'un colis
     static async changerEtatColis(code: string, nouvelEtat: string): Promise<{statut: string, message?: string}> {
         try {
-            // Utiliser le service existant pour la logique métier
-            const typeCargaison = TypeCargaison.MARITIME; // Par défaut
+            const typeCargaison = TypeCargaison.MARITIME; 
             const service = new CargaisonService(typeCargaison);
             
-            // Appliquer la logique métier
             const success = service.changerEtatColis(code, nouvelEtat as EtatColis);
             
             if (success) {
-                // Sauvegarder dans le JSON
-                await DataManager.updateColisEtat(code, nouvelEtat.toUpperCase());
+                await DataManager.updateColisEtat(code, nouvelEtat.toUpperCase() as EtatColis);
                 
                 return {
                     statut: 'succès',

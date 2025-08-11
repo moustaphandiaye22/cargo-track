@@ -1,11 +1,68 @@
 import { promises as fs } from 'fs';
 import { CodeGenerator } from '../service/CodeGenerator';
+import { EtatColis } from '../Enum/EtatColis';
+import { TypeColis } from '../Enum/TypeColis';
+import { TypePersonne } from '../Enum/TypePersonne';
+import { TypeCargaison } from '../Enum/TypeCargaison';
+import { EtatAvancement } from '../Enum/EtatAvancement';
+import { EtatGlobal } from '../Enum/EtatGlobal';
+
+interface PersonneData {
+    id: number;
+    nom: string;
+    prenom: string;
+    email: string;
+    password: string;
+    adresse: string;
+    telephone: string;
+    type: TypePersonne;
+}
+
+interface ColisData {
+    id: number;
+    code: string;
+    nombre: number;
+    poids: number;
+    prix: number;
+    typeproduit: TypeColis;
+    etat: EtatColis;
+    expediteur: PersonneData;
+    destinataire: PersonneData;
+    dateCreation: string;
+    dateArchivage?: string;
+    cargaisonId?: number;
+}
+
+interface CargaisonData {
+    id: number;
+    numero: number;
+    poidsMax: number;
+    prixtotal: number;
+    distance: number;
+    type: TypeCargaison;
+    etatAvancement: EtatAvancement;
+    etatglobal: EtatGlobal;
+    datedepart: string;
+    datedarrive: string;
+    dateCreation: string;
+    lieuDepart?: {nom: string};
+    lieuArrive?: {nom: string};
+}
+
+interface RecuData {
+    numerorecu: string;
+    dateEmission: string;
+    colis: ColisData;
+    expediteur: PersonneData;
+    destinataire: PersonneData;
+    montanttotal: number;
+}
 
 interface DatabaseData {
-    cargaisons: any[];
-    colis: any[];
-    personnes: any[];
-    reçus: any[];
+    cargaisons: CargaisonData[];
+    colis: ColisData[];
+    personnes: PersonneData[];
+    reçus: RecuData[];
 }
 
 export class DataManager {
@@ -32,28 +89,28 @@ export class DataManager {
     }
 
     // Méthodes pour les cargaisons
-    static async getAllCargaisons(): Promise<any[]> {
+    static async getAllCargaisons(): Promise<CargaisonData[]> {
         const data = await this.loadData();
         return data.cargaisons;
     }
 
-    static async getCargaisonById(id: number): Promise<any | null> {
+    static async getCargaisonById(id: number): Promise<CargaisonData | null> {
         const data = await this.loadData();
         return data.cargaisons.find(c => c.id === id) || null;
     }
 
     // Méthodes pour les colis
-    static async getAllColis(): Promise<any[]> {
+    static async getAllColis(): Promise<ColisData[]> {
         const data = await this.loadData();
         return data.colis;
     }
 
-    static async getColisByCode(code: string): Promise<any | null> {
+    static async getColisByCode(code: string): Promise<ColisData | null> {
         const data = await this.loadData();
         return data.colis.find(c => c.code === code) || null;
     }
 
-    static async updateColisEtat(code: string, nouvelEtat: string): Promise<boolean> {
+    static async updateColisEtat(code: string, nouvelEtat: EtatColis): Promise<boolean> {
         const data = await this.loadData();
         const colisIndex = data.colis.findIndex(c => c.code === code);
         
@@ -63,7 +120,7 @@ export class DataManager {
 
         data.colis[colisIndex].etat = nouvelEtat;
         
-        if (nouvelEtat === 'ARCHIVE') {
+        if (nouvelEtat === EtatColis.ARCHIVE) {
             data.colis[colisIndex].dateArchivage = new Date().toISOString().split('T')[0];
         }
 
@@ -71,19 +128,19 @@ export class DataManager {
     }
 
     // Méthodes pour les personnes
-    static async getAllPersonnes(): Promise<any[]> {
+    static async getAllPersonnes(): Promise<PersonneData[]> {
         const data = await this.loadData();
         return data.personnes;
     }
 
-    static async saveNewColis(colisData: any): Promise<boolean> {
+    static async saveNewColis(colisData: ColisData): Promise<boolean> {
         const data = await this.loadData();
         colisData.id = Math.max(...data.colis.map(c => c.id), 0) + 1;
         data.colis.push(colisData);
         return await this.saveData(data);
     }
 
-    static async saveNewCargaison(cargaisonData: any): Promise<boolean> {
+    static async saveNewCargaison(cargaisonData: CargaisonData): Promise<boolean> {
         const data = await this.loadData();
         cargaisonData.id = Math.max(...data.cargaisons.map(c => c.id), 0) + 1;
         cargaisonData.numero = CodeGenerator.genererNumeroCargaison();

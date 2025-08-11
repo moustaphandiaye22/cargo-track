@@ -8,7 +8,7 @@ async function main() {
     const command = args[0];
     
     try {
-        let result: any;
+        let result: {statut: string, data?: unknown, message?: string, commands?: string[]};
         
         switch (command) {
             case 'suivi':

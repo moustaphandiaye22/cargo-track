@@ -1,37 +1,102 @@
+<?php
+// Charger les utilitaires du dashboard
+require_once dirname(__DIR__, 2) . '/utils/dashboard_helpers.php';
+
+// Charger les données depuis database.json
+$data = loadDatabaseData();
+if ($data === null) {
+    $data = ['cargaisons' => [], 'colis' => []];
+}
+
+// Gérer les messages de session
+$successMessage = null;
+$errorMessage = null;
+
+if (isset($_SESSION['success_message'])) {
+    $successMessage = $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
+
+if (isset($_SESSION['error_message'])) {
+    $errorMessage = $_SESSION['error_message'];
+    unset($_SESSION['error_message']);
+}
+
+// Gérer le reçu généré
+$recuGenere = null;
+if (isset($_SESSION['recu_genere'])) {
+    $recuGenere = $_SESSION['recu_genere'];
+    unset($_SESSION['recu_genere']);
+}
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CargoTrack</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --coral: #FF6B35;
+            --emerald: #2ECC71;
+            --charcoal: #2C3E50;
+            --light-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--coral), var(--emerald));
+        }
+        .tab-active {
+            background: var(--coral);
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-light-gray min-h-screen">
+
     <!-- Modal Nouveau Colis -->
     <div id="modalNouveauColis" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-charcoal">Nouveau Colis</h3>
-                <button onclick="closeModal('modalNouveauColis')" class="text-medium-gray hover:text-coral text-2xl">
+        <div class="bg-white rounded-2xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-charcoal">Nouveau Colis</h3>
+                <button onclick="closeModal('modalNouveauColis')" class="text-medium-gray hover:text-coral text-xl">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form class="space-y-3" method="POST" action="/api/colis" id="formNouveauColis">
-                <div class="grid md:grid-cols-2 gap-4">
-                   <div>
-                        <label class="block text-charcoal font-semibold mb-2">Date de création</label>
-                        <input name="dateCreation" type="date" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+            <form class="space-y-4" method="POST" action="/api/colis" id="formNouveauColis">
+                <!-- Info de base -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">Date de création *</label>
+                        <input name="dateCreation" type="date" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" >
+                        <span class="error-message text-red-500 text-xs hidden"></span>
                     </div>
                     <div>
-                        <label class="block text-charcoal font-semibold mb-2">Nombre</label>
-                        <input name="nombre" type="number" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Nombre d'articles" required>
-                    </div>
-                </div>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Poids (kg)</label>
-                        <input name="poids" type="number" step="0.01" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Poids" required>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">Nombre *</label>
+                        <input name="nombre" type="number" min="1" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Qté" >
+                        <span class="error-message text-red-500 text-xs hidden"></span>
                     </div>
                     <div>
-                        <label class="block text-charcoal font-semibold mb-2">Prix (FCFA)</label>
-                        <input name="prix" type="number" step="0.01" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Prix" required>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">Poids (kg) *</label>
+                        <input name="poids" type="number" step="0.01" min="0.01" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="0.0" >
+                        <span class="error-message text-red-500 text-xs hidden"></span>
                     </div>
                 </div>
-                <div class="grid md:grid-cols-2 gap-4">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-charcoal font-semibold mb-2">Type de Colis</label>
-                        <select name="typeproduit" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">Prix (FCFA) *</label>
+                        <input name="prix" type="number" step="0.01" min="0" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="0" >
+                        <span class="error-message text-red-500 text-xs hidden"></span>
+                        <small class="text-xs text-emerald">Minimum automatique : 10 000 FCFA</small>
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">Type de Colis *</label>
+                        <select name="typeproduit" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
+                            <option value="">Sélectionner...</option>
                             <option value="ALIMENTAIRE">Alimentaire</option>
                             <option value="CHIMIQUE">Chimique</option>
                             <option value="FRAGILE">Fragile</option>
@@ -39,74 +104,102 @@
                             <option value="MATERIEL">Matériel</option>
                             <option value="AUTRES">Autres</option>
                         </select>
+                        <span class="error-message text-red-500 text-xs hidden"></span>
                     </div>
                     <div>
-                        <label class="block text-charcoal font-semibold mb-2">État</label>
-                        <select name="etat" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
-                            <option value="EN_ATTENTE">En attente</option>
-                            <option value="EN_COURS">En cours</option>
-                            <option value="ARRIVE">Arrivé</option>
-                            <option value="RECUPERE">Récupéré</option>
-                            <option value="PERDU">Perdu</option>
-                            <option value="ARCHIVE">Archivé</option>
-                            <option value="ANNULE">Annulé</option>
-                        </select>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">Compatibilité transport</label>
+                        <div id="transport-compatibility" class="text-xs p-2 bg-light-gray rounded text-medium-gray">
+                            Sélectionnez un type et une cargaison pour voir la compatibilité
+                        </div>
                     </div>
                 </div>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Expéditeur - Nom</label>
-                        <input name="expediteur_nom" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Nom expéditeur" required>
-                    </div>
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Expéditeur - Prénom</label>
-                        <input name="expediteur_prenom" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Prénom expéditeur" required>
-                    </div>
-                </div>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Expéditeur - Téléphone</label>
-                        <input name="expediteur_telephone" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Téléphone expéditeur" required>
-                    </div>
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Expéditeur - Adresse</label>
-                        <input name="expediteur_adresse" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Adresse expéditeur" required>
-                    </div>
-                </div>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Destinataire - Nom</label>
-                        <input name="destinataire_nom" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Nom destinataire" required>
-                    </div>
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Destinataire - Prénom</label>
-                        <input name="destinataire_prenom" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Prénom destinataire" required>
+
+                <!-- Expéditeur -->
+                <div class="bg-light-gray p-3 rounded-lg">
+                    <h4 class="font-semibold text-charcoal mb-2 text-sm">Expéditeur *</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <input name="expediteur_nom" type="text" minlength="2" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Nom *">
+                            <span class="error-message text-red-500 text-xs hidden"></span>
+                        </div>
+                        <div>
+                            <input name="expediteur_prenom" type="text" minlength="2" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Prénom *" >
+                            <span class="error-message text-red-500 text-xs hidden"></span>
+                        </div>
+                        <div>
+                            <input name="expediteur_telephone" type="tel" pattern="[+]?[0-9\s\-()]{8,}" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Téléphone * (+221771234567)">
+                            <span class="error-message text-red-500 text-xs hidden"></span>
+                        </div>
+                        <div>
+                            <input name="expediteur_adresse" type="text" minlength="5" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Adresse complète *" >
+                            <span class="error-message text-red-500 text-xs hidden"></span>
+                        </div>
                     </div>
                 </div>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Destinataire - Téléphone</label>
-                        <input name="destinataire_telephone" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Téléphone destinataire" required>
-                    </div>
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Destinataire - Adresse</label>
-                        <input name="destinataire_adresse" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Adresse destinataire" required>
+
+                <!-- Destinataire -->
+                <div class="bg-light-gray p-3 rounded-lg">
+                    <h4 class="font-semibold text-charcoal mb-2 text-sm">Destinataire *</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <input name="destinataire_nom" type="text" minlength="2" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Nom *" >
+                            <span class="error-message text-red-500 text-xs hidden"></span>
+                        </div>
+                        <div>
+                            <input name="destinataire_prenom" type="text" minlength="2" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Prénom *" >
+                            <span class="error-message text-red-500 text-xs hidden"></span>
+                        </div>
+                        <div>
+                            <input name="destinataire_telephone" type="tel" pattern="[+]?[0-9\s\-()]{8,}" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Téléphone * (+33612345678)" >
+                            <span class="error-message text-red-500 text-xs hidden"></span>
+                        </div>
+                        <div>
+                            <input name="destinataire_adresse" type="text" minlength="5" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Adresse complète *" >
+                            <span class="error-message text-red-500 text-xs hidden"></span>
+                        </div>
                     </div>
                 </div>
-                <div class="grid md:grid-cols-1 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Cargaison associée (ID)</label>
-                        <input name="cargaison_id" type="number" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="ID de la cargaison" required>
-                    </div>
+
+                <!-- Cargaison -->
+                <div>
+                    <label class="block text-charcoal font-semibold mb-1 text-sm">Cargaison de destination *</label>
+                    <select name="cargaison_id" id="selectCargaison" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" required>
+                        <option value="">Sélectionner une cargaison...</option>
+                        <?php 
+                        if (isset($data['cargaisons'])) {
+                            foreach ($data['cargaisons'] as $cargaison) {
+                                if ($cargaison['etatGlobal'] === 'OUVERT') {
+                                    echo "<option value='{$cargaison['id']}' data-type='{$cargaison['type']}'>";
+                                    echo "#{$cargaison['numero']} - {$cargaison['type']} ({$cargaison['lieuDepart']['nom']} → {$cargaison['lieuArrive']['nom']})";
+                                    echo "</option>";
+                                }
+                            }
+                        }
+                        ?>
+                    </select>
+                    <span class="error-message text-red-500 text-xs hidden"></span>
+                    <small class="text-medium-gray text-xs">Seules les cargaisons ouvertes sont disponibles</small>
                 </div>
                     
-                   
-                <div class="flex justify-end space-x-4 mt-8">
-                    <button type="button" onclick="closeModal('modalNouveauColis')" class="px-6 py-3 border border-light-gray text-medium-gray rounded-lg hover:bg-light-gray transition-all">
+                <!-- Messages -->
+                <div id="form-messages" class="hidden">
+                    <div id="success-message" class="p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg mb-4 hidden">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span></span>
+                    </div>
+                    <div id="error-message" class="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg mb-4 hidden">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span></span>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-light-gray">
+                    <button type="button" onclick="closeModal('modalNouveauColis')" class="px-4 py-2 border border-light-gray text-medium-gray rounded-lg hover:bg-light-gray transition-all text-sm">
                         Annuler
                     </button>
-                    <button type="submit" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
-                        Créer Colis
+                    <button type="submit" id="submit-colis-btn" class="btn-gradient text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm">
+                        <span class="btn-text">Créer Colis</span>
+                        <i class="fas fa-spinner fa-spin hidden ml-2"></i>
                     </button>
                 </div>
             </form>
@@ -206,7 +299,25 @@ if (!$data) {
             </h1>
             <p class="text-xl opacity-90">Gérez vos cargaisons, colis et clients en temps réel</p>
             
-            <?php if (isset($errorMessage)): ?>
+            <?php if ($successMessage): ?>
+            <div class="mt-4 bg-green-500 bg-opacity-20 border border-green-300 rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span><?php echo htmlspecialchars($successMessage); ?></span>
+                    </div>
+                    <?php if ($recuGenere): ?>
+                    <a href="/recu?numero=<?php echo urlencode($recuGenere); ?>" 
+                       target="_blank"
+                       class="bg-white text-green-600 px-4 py-2 rounded-lg border border-green-300 hover:bg-green-50 transition-colors">
+                        <i class="fas fa-receipt mr-2"></i>Voir le reçu
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($errorMessage): ?>
             <div class="mt-4 bg-red-500 bg-opacity-20 border border-red-300 rounded-lg p-4">
                 <div class="flex items-center">
                     <i class="fas fa-exclamation-triangle mr-2"></i>
@@ -409,119 +520,184 @@ if (!$data) {
     <!-- Modals -->
     <!-- Modal Nouvelle Cargaison -->
     <div id="modalNouvelleCargaison" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-charcoal">Nouvelle Cargaison</h3>
-                <button onclick="closeModal('modalNouvelleCargaison')" class="text-medium-gray hover:text-coral text-2xl">
+        <div class="bg-white rounded-2xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-charcoal">Nouvelle Cargaison</h3>
+                <button onclick="closeModal('modalNouvelleCargaison')" class="text-medium-gray hover:text-coral text-xl">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
             <form class="space-y-4" method="POST" action="/api/cargaison" id="formNouvelleCargaison">
-                <div class="grid md:grid-cols-2 gap-4">
+                <!-- Informations de base -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-charcoal font-semibold mb-2">Type de Cargaison</label>
-                        <select name="type" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">Type de Transport</label>
+                        <select name="type" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
                             <option value="MARITIME">Maritime</option>
                             <option value="AERIENNE">Aérien</option>
                             <option value="ROUTIERE">Routier</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-charcoal font-semibold mb-2">Poids Max (kg)</label>
-                        <input name="poidsMax" type="number" step="0.01" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Poids maximum" required>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">Poids Max (kg)</label>
+                        <input name="poidsMax" type="number" step="0.01" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="50.0">
+                    </div>
+                    <div>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">Distance (km)</label>
+                        <input name="distance" type="number" step="0.01" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="5800">
                     </div>
                 </div>
-                    
-               
-                <div class="grid md:grid-cols-2 gap-4">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-charcoal font-semibold mb-2">Prix Total (FCFA)</label>
-                        <input name="prixtotal" type="number" step="0.01" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Prix total" required>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">Prix Total (FCFA)</label>
+                        <input name="prixtotal" type="number" step="0.01" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="100000">
                     </div>
                     <div>
-                        <label class="block text-charcoal font-semibold mb-2">Distance (km)</label>
-                        <input name="distance" type="number" step="0.01" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Distance" required>
-                    </div>
-                </div>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">État d'Avancement</label>
-                        <select name="etatAvancement" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">État d'Avancement</label>
+                        <select name="etatAvancement" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
+                            <option value="EN_ATTENTE">En attente</option>
                             <option value="EN_COURS">En cours</option>
                             <option value="ARRIVE">Arrivé</option>
-                            <option value="EN_ATTENTE">En attente</option>
-                            <option value="EN_RETARD">En retard</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-charcoal font-semibold mb-2">État Global</label>
-                        <select name="etatglobal" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
+                        <label class="block text-charcoal font-semibold mb-1 text-sm">État Global</label>
+                        <select name="etatglobal" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
                             <option value="OUVERT">Ouvert</option>
                             <option value="FERME">Fermé</option>
                         </select>
                     </div>
                 </div>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Date de Départ</label>
-                        <input name="datedepart" type="date" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
-                    </div>
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Date d'Arrivée</label>
-                        <input name="datedarrive" type="date" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" required>
-                    </div>
-                </div>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Coordonnée Départ (Latitude)</label>
-                        <input name="coord_depart_lat" type="number" step="0.000001" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Latitude départ" required>
-                    </div>
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Coordonnée Départ (Longitude)</label>
-                        <input name="coord_depart_long" type="number" step="0.000001" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Longitude départ" required>
-                    </div>
-                </div>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Coordonnée Arrivée (Latitude)</label>
-                        <input name="coord_arrive_lat" type="number" step="0.000001" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Latitude arrivée" required>
-                    </div>
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Coordonnée Arrivée (Longitude)</label>
-                        <input name="coord_arrive_long" type="number" step="0.000001" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Longitude arrivée" required>
+
+                <!-- Dates et lieux -->
+                <div class="bg-light-gray p-3 rounded-lg">
+                    <h4 class="font-semibold text-charcoal mb-2 text-sm">Itinéraire et dates</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-charcoal font-medium mb-1 text-xs">Ville de Départ</label>
+                            <input name="ville_depart" type="text" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Dakar">
+                        </div>
+                        <div>
+                            <label class="block text-charcoal font-medium mb-1 text-xs">Ville d'Arrivée</label>
+                            <input name="ville_arrivee" type="text" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Paris">
+                        </div>
+                        <div>
+                            <label class="block text-charcoal font-medium mb-1 text-xs">Date de Départ</label>
+                            <input name="datedepart" type="date" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-charcoal font-medium mb-1 text-xs">Date d'Arrivée</label>
+                            <input name="datedarrive" type="date" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
+                        </div>
                     </div>
                 </div>
+
+                <!-- Coordonnées GPS (optionnel) -->
+                <div class="bg-light-gray p-3 rounded-lg">
+                    <h4 class="font-semibold text-charcoal mb-2 text-sm">Coordonnées GPS (optionnel)</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="space-y-2">
+                            <p class="text-xs text-medium-gray font-medium">Point de départ</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input name="coord_depart_lat" type="number" step="0.000001" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Latitude">
+                                <input name="coord_depart_long" type="number" step="0.000001" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Longitude">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-xs text-medium-gray font-medium">Point d'arrivée</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input name="coord_arrive_lat" type="number" step="0.000001" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Latitude">
+                                <input name="coord_arrive_long" type="number" step="0.000001" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" placeholder="Longitude">
+                            </div>
+                        </div>
+                    </div>
+                    <small class="text-xs text-medium-gray">Les coordonnées GPS permettront un suivi précis de la cargaison</small>
                 </div>
                 
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Ville de Départ</label>
-                        <input name="ville_depart" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Dakar" required>
-                    </div>
-                    <div>
-                        <label class="block text-charcoal font-semibold mb-2">Ville d'Arrivée</label>
-                        <input name="ville_arrivee" type="text" class="w-full px-4 py-3 border border-light-gray rounded-lg focus:border-coral focus:outline-none" placeholder="Paris" required>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-4 mt-8">
-                    <button type="button" onclick="closeModal('modalNouvelleCargaison')" class="px-6 py-3 border border-light-gray text-medium-gray rounded-lg hover:bg-light-gray transition-all">
+                <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-light-gray">
+                    <button type="button" onclick="closeModal('modalNouvelleCargaison')" class="px-4 py-2 border border-light-gray text-medium-gray rounded-lg hover:bg-light-gray transition-all text-sm">
                         Annuler
                     </button>
-                    <button type="submit" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
-                        Créer Cargaison
+                    <button type="submit" id="submit-cargaison-btn" class="btn-gradient text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm">
+                        <span class="btn-text">Créer Cargaison</span>
+                        <i class="fas fa-spinner fa-spin hidden ml-2"></i>
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Scripts modulaires chargés avant la fermeture du body -->
+    <script src="/public/js/form-validator.js"></script>
+    <script src="/public/js/transport-compatibility.js"></script>
+    <script src="/public/js/modal-manager.js"></script>
+    <script src="/public/js/form-handler.js"></script>
+    <script src="/public/js/dashboard.js"></script>
+    
     <script>
-        // Le nom d'utilisateur sera affiché via PHP si connecté
-
-        // Tab functionality
+        // Variables globales pour les instances
+        let dashboard, modalManager, formValidator, transportCompatibility, formHandler;
+        
+        // Initialisation quand le DOM est prêt
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Créer les instances
+                formValidator = new FormValidator();
+                transportCompatibility = new TransportCompatibility();
+                modalManager = new ModalManager();
+                formHandler = new FormHandler(formValidator);
+                dashboard = new Dashboard();
+                
+                // Exposer globalement pour les événements onclick
+                window.modalManager = modalManager;
+                window.formValidator = formValidator;
+                window.transportCompatibility = transportCompatibility;
+                window.formHandler = formHandler;
+                window.dashboard = dashboard;
+                
+                console.log('Dashboard initialisé avec succès');
+            } catch (error) {
+                console.error('Erreur lors de l\'initialisation du dashboard:', error);
+            }
+        });
+        
+        // Fonctions globales pour les événements onclick (définies immédiatement)
+        function openModal(modalId) {
+            console.log('openModal appelé avec:', modalId);
+            if (window.modalManager) {
+                window.modalManager.openModal(modalId);
+            } else {
+                // Fallback si les modules ne sont pas chargés
+                console.warn('modalManager non disponible, utilisation du fallback');
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
+        
+        function closeModal(modalId) {
+            console.log('closeModal appelé avec:', modalId);
+            if (window.modalManager) {
+                window.modalManager.closeModal(modalId);
+            } else {
+                // Fallback si les modules ne sont pas chargés
+                console.warn('modalManager non disponible, utilisation du fallback');
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    document.body.style.overflow = '';
+                }
+            }
+        }
+        
         function showTab(tabName) {
+            console.log('showTab appelé avec:', tabName);
             // Hide all tab contents
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.add('hidden');
@@ -534,39 +710,31 @@ if (!$data) {
             });
             
             // Show selected tab
-            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const targetTab = document.getElementById(`tab-${tabName}`);
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+            }
             
             // Add active class to selected tab button
-            event.target.classList.add('active', 'text-coral', 'border-b-2', 'border-coral');
-            event.target.classList.remove('text-medium-gray');
+            if (event && event.target) {
+                event.target.classList.add('active', 'text-coral', 'border-b-2', 'border-coral');
+                event.target.classList.remove('text-medium-gray');
+            }
         }
-
-        // Modal functionality
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.remove('hidden');
-            document.getElementById(modalId).classList.add('flex');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-            document.getElementById(modalId).classList.remove('flex');
-        }
-
-        // Logout functionality
+        
         function seDeconnecter() {
+            console.log('seDeconnecter appelé');
             if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
                 window.location.href = '/logout';
             }
         }
-
-        // Close modals when clicking outside
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.add('hidden');
-                    this.classList.remove('flex');
-                }
-            });
+        
+        // Debug - vérifier que les fonctions sont disponibles
+        console.log('Fonctions globales définies:', {
+            openModal: typeof openModal,
+            closeModal: typeof closeModal,
+            showTab: typeof showTab,
+            seDeconnecter: typeof seDeconnecter
         });
     </script>
 </body>

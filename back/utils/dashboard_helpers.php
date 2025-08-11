@@ -27,11 +27,7 @@ function loadDatabaseData() {
     return $data;
 }
 
-/**
- * Calcule les statistiques pour le dashboard
- * @param array $data Les données de la base
- * @return array Les statistiques calculées
- */
+
 function calculerStatistiques($data) {
     $stats = [
         'colis_actifs' => 0,
@@ -42,10 +38,8 @@ function calculerStatistiques($data) {
     
     if (!$data) return $stats;
     
-    // Nombre de cargaisons
     $stats['nombre_cargaisons'] = count($data['cargaisons'] ?? []);
     
-    // Calculs sur les colis
     $colis = $data['colis'] ?? [];
     $stats['colis_actifs'] = count(array_filter($colis, function($colis) {
         return $colis['etat'] !== 'ARCHIVE';
@@ -55,7 +49,6 @@ function calculerStatistiques($data) {
         return in_array($colis['etat'], ['EN_COURS', 'EN_TRANSIT']);
     }));
     
-    // Nombre de clients (type CLIENT uniquement)
     $personnes = $data['personnes'] ?? [];
     $stats['nombre_clients'] = count(array_filter($personnes, function($personne) {
         return $personne['type'] === 'CLIENT';
@@ -64,11 +57,7 @@ function calculerStatistiques($data) {
     return $stats;
 }
 
-/**
- * Génère le HTML pour le tableau des cargaisons
- * @param array $data Les données de la base
- * @return string Le HTML du tableau
- */
+
 function genererTableauCargaisons($data) {
     if (!$data || !isset($data['cargaisons'])) {
         return '<tr><td colspan="6" class="px-6 py-4 text-center text-medium-gray">Aucune cargaison trouvée</td></tr>';
@@ -84,7 +73,6 @@ function genererTableauCargaisons($data) {
             return $colis['cargaisonId'] === $cargaison['id'];
         }));
         
-        // Déterminer la couleur de l'état
         $etatClass = 'bg-medium-gray';
         $etatText = $cargaison['etatAvancement'];
         
@@ -103,7 +91,6 @@ function genererTableauCargaisons($data) {
                 break;
         }
         
-        // Déterminer la couleur du type
         $typeClass = 'bg-emerald';
         $typeText = ucfirst(strtolower($cargaison['type']));
         
