@@ -35,7 +35,7 @@ class RecuService {
     /**
      * Convertit un reçu en format JSON pour la sauvegarde
      * @param recu Le reçu à convertir
-     * @returns any L'objet JSON représentant le reçu
+     * @returns object L'objet JSON représentant le reçu
      */
     static recuVersJSON(recu) {
         const colis = recu.getColis();

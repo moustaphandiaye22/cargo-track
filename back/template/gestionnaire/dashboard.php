@@ -281,7 +281,7 @@ if (!$data) {
                 <div class="flex items-center space-x-4">
                     <div class="hidden md:flex items-center space-x-2 text-charcoal">
                         <i class="fas fa-user-circle text-coral"></i>
-                        <span id="username"><?php echo isset($_SESSION['user']['username']) ? $_SESSION['user']['username'] : 'Admin'; ?></span>
+                        <span id="username"><?php echo isset($_SESSION['user']['email']) ? $_SESSION['user']['email'] : 'Gestionnaire'; ?></span>
                     </div>
                     <button onclick="seDeconnecter()" class="bg-coral hover:bg-sunset text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300">
                         <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion

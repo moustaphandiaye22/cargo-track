@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataManager = void 0;
 const fs_1 = require("fs");
 const CodeGenerator_1 = require("../service/CodeGenerator");
+const EtatColis_1 = require("../Enum/EtatColis");
 class DataManager {
     static async loadData() {
         try {
@@ -49,7 +50,7 @@ class DataManager {
             return false;
         }
         data.colis[colisIndex].etat = nouvelEtat;
-        if (nouvelEtat === 'ARCHIVE') {
+        if (nouvelEtat === EtatColis_1.EtatColis.ARCHIVE) {
             data.colis[colisIndex].dateArchivage = new Date().toISOString().split('T')[0];
         }
         return await this.saveData(data);

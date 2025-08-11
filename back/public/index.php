@@ -15,7 +15,6 @@ if (file_exists($autoloadPath)) {
 
 require_once dirname(__DIR__) . '/app/core/App.php';
 require_once dirname(__DIR__) . '/app/core/Router.php';
-require_once dirname(__DIR__) . '/app/core/Session.php';
 
 // Configuration des headers pour le développement
 header('Access-Control-Allow-Origin: *');

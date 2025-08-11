@@ -9,33 +9,24 @@ const TypeColis_1 = require("../Enum/TypeColis");
 const EtatColis_1 = require("../Enum/EtatColis");
 const TypeCargaison_1 = require("../Enum/TypeCargaison");
 class RecuAPI {
-    /**
-     * Génère un reçu à partir des données JSON reçues
-     * @param jsonData Les données du colis et de la cargaison
-     * @returns string JSON du reçu généré
-     */
     static genererRecuDepuisJSON(jsonData) {
         try {
             const data = JSON.parse(jsonData);
-            // Créer l'expéditeur
             const expediteur = new Personne_1.Personne();
             expediteur.setNom(data.expediteur.nom);
             expediteur.setPrenom(data.expediteur.prenom);
             expediteur.setTelephone(data.expediteur.telephone);
             expediteur.setAdresse(data.expediteur.adresse);
-            // Créer le destinataire
             const destinataire = new Personne_1.Personne();
             destinataire.setNom(data.destinataire.nom);
             destinataire.setPrenom(data.destinataire.prenom);
             destinataire.setTelephone(data.destinataire.telephone);
             destinataire.setAdresse(data.destinataire.adresse);
-            // Créer la cargaison
             const cargaison = new Cargaison_1.Cargaison();
             cargaison.setNumero(data.cargaison.numero);
             cargaison.setType(this.convertStringToTypeCargaison(data.cargaison.type));
             cargaison.setDatedepart(new Date(data.cargaison.dateDepart));
             cargaison.setDatedarrive(new Date(data.cargaison.dateArrive));
-            // Créer le colis
             const colis = new Colis_1.Colis();
             colis.setCode(data.colis.code);
             colis.setNombre(data.colis.nombre);
@@ -47,9 +38,7 @@ class RecuAPI {
             colis.setExpediteur(expediteur);
             colis.setDestinataire(destinataire);
             colis.setCargaison(cargaison);
-            // Générer le reçu
             const recu = RecuService_1.RecuService.genererRecu(colis);
-            // Convertir en JSON
             const recuJSON = RecuService_1.RecuService.recuVersJSON(recu);
             return JSON.stringify({
                 success: true,
@@ -63,11 +52,6 @@ class RecuAPI {
             });
         }
     }
-    /**
-     * Valide un reçu à partir de son JSON
-     * @param recuJSON Le JSON du reçu à valider
-     * @returns string Résultat de la validation
-     */
     static validerRecuJSON(recuJSON) {
         try {
             const recuData = JSON.parse(recuJSON);
@@ -85,11 +69,6 @@ class RecuAPI {
             });
         }
     }
-    /**
-     * Génère un résumé du reçu
-     * @param recuJSON Le JSON du reçu
-     * @returns string Le résumé
-     */
     static genererResumeJSON(recuJSON) {
         try {
             const recuData = JSON.parse(recuJSON);
@@ -107,7 +86,6 @@ class RecuAPI {
             });
         }
     }
-    // Méthodes utilitaires pour convertir les chaînes en enums
     static convertStringToTypeColis(type) {
         switch (type) {
             case 'ALIMENTAIRE': return TypeColis_1.TypeColis.ALIMENTAIRE;
@@ -137,11 +115,9 @@ class RecuAPI {
     }
 }
 exports.RecuAPI = RecuAPI;
-// Export pour utilisation en Node.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { RecuAPI };
 }
-// Si exécuté en ligne de commande, traiter les arguments
 if (typeof process !== 'undefined' && process.argv && process.argv.length > 2) {
     const action = process.argv[2];
     const jsonData = process.argv[3];

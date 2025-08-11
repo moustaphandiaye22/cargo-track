@@ -3,6 +3,9 @@
 // Inclure la logique métier
 require_once dirname(__DIR__) . '/validation/BusinessLogic.php';
 require_once dirname(__DIR__) . '/utils/RecuGenerator.php';
+require_once dirname(__DIR__) . '/app/core/TypeScriptAuth.php';
+
+use App\Core\TypeScriptAuth;
 
 $routes = [];
 
@@ -284,23 +287,30 @@ $routes[] = [
     'method' => 'POST',
     'path' => '/login',
     'action' => function() {
-        $username = $_POST['username'] ?? '';
+        $email = $_POST['username'] ?? $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
         
-        $valid_users = [
-            'admin' => 'admin123',
-            'gestionnaire' => 'gest123'
-        ];
+        if (empty($email) || empty($password)) {
+            header('Location: /login?error=1');
+            exit();
+        }
         
-        if (isset($valid_users[$username]) && $valid_users[$username] === $password) {
+        // Utiliser l'authentification TypeScript
+        $result = TypeScriptAuth::login($email, $password);
+        
+        if ($result['statut'] === 'succès') {
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
-            $_SESSION['user'] = ['username' => $username, 'role' => 'gestionnaire'];
+            
+            // Stocker le token et les infos utilisateur
+            TypeScriptAuth::setSessionToken($result['token']);
+            $_SESSION['user'] = $result['user'];
+            
             header('Location: /dashboard');
             exit();
         } else {
-            header('Location: /login?error=1');
+            header('Location: /login?error=1&message=' . urlencode($result['message']));
             exit();
         }
     }
@@ -381,10 +391,21 @@ $routes[] = [
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        if (!isset($_SESSION['user'])) {
+        
+        // Vérifier l'authentification via TypeScript
+        if (!TypeScriptAuth::isAuthenticated()) {
             header('Location: /login');
             exit();
         }
+        
+        // Récupérer les infos utilisateur depuis TypeScript
+        $user = TypeScriptAuth::getUser();
+        if (!$user || $user['type'] !== 'GESTIONNAIRE') {
+            header('Location: /login');
+            exit();
+        }
+        
+        $_SESSION['user'] = $user;
         require_once dirname(__DIR__) . '/template/gestionnaire/dashboard.php';
     }
 ];
@@ -396,7 +417,12 @@ $routes[] = [
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+        
+        // Déconnexion via TypeScript
+        TypeScriptAuth::logout();
+        TypeScriptAuth::clearSession();
         session_destroy();
+        
         header('Location: /');
         exit();
     }

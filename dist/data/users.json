@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "nom": "Gestionnaire",
+    "prenom": "Principal",
+    "email": "gestionnaire",
+    "password": "2dace04e422ee55c3b62928a6f41ce67e8840665b11742c35266b7e5402d0000",
+    "type": "GESTIONNAIRE",
+    "adresse": "Bureau gestion",
+    "telephone": "0000000001"
+  },
+  {
+    "id": 2,
+    "nom": "Test",
+    "prenom": "Manager",
+    "email": "test@manager.com",
+    "password": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+    "type": "GESTIONNAIRE",
+    "adresse": "Siege",
+    "telephone": "987654321"
+  }
+]

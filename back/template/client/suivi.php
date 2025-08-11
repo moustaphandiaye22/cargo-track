@@ -9,6 +9,9 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -67,12 +70,28 @@
         }
         #map {
             height: 400px;
+            width: 100%;
             border-radius: 1rem;
+            z-index: 0;
         }
         .map-container {
             border: 2px solid #ECF0F1;
             border-radius: 1rem;
             overflow: hidden;
+            width: 100%;
+            height: 400px;
+            position: relative;
+        }
+        
+        /* Masquer le panneau d'instructions de Leaflet Routing Machine */
+        .leaflet-routing-container {
+            display: none !important;
+        }
+        
+        /* Optimiser l'affichage des marqueurs personnalisés */
+        .custom-marker {
+            border: none !important;
+            background: transparent !important;
         }
     </style>
 </head>
@@ -381,7 +400,7 @@
         // Variables globales
         let map;
         let departMarker, arriveeMarker, positionMarker;
-        let routeLine;
+        let routingControl;
         
         // Mobile menu toggle
         document.getElementById('mobile-menu-btn').addEventListener('click', function() {
@@ -391,78 +410,111 @@
         
         // Initialiser la carte
         function initMap() {
+            if (map) {
+                map.remove(); // Nettoyer l'ancienne carte si elle existe
+            }
+            
             // Créer la carte centrée sur le Sénégal
-            map = L.map('map').setView([14.6937, -17.4441], 6);
+            map = L.map('map', {
+                zoomControl: true,
+                scrollWheelZoom: true,
+                doubleClickZoom: true,
+                dragging: true
+            }).setView([14.6937, -17.4441], 6);
             
             // Ajouter les tuiles OpenStreetMap
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
             }).addTo(map);
+            
+            // Forcer l'invalidation de la taille après un court délai
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
         }
         
         // Afficher le trajet sur la carte
         function afficherTrajet(coordonnees) {
             if (!map || !coordonnees) return;
             
-            // Nettoyer les anciens marqueurs et lignes
+            // S'assurer que la carte est correctement dimensionnée
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+            
+            // Nettoyer les anciens marqueurs et routes
             if (departMarker) map.removeLayer(departMarker);
             if (arriveeMarker) map.removeLayer(arriveeMarker);
             if (positionMarker) map.removeLayer(positionMarker);
-            if (routeLine) map.removeLayer(routeLine);
+            if (routingControl) map.removeControl(routingControl);
             
             const depart = coordonnees.depart;
             const arrivee = coordonnees.arrivee;
             const position = coordonnees.position_actuelle;
             
+            // Créer des icônes personnalisées
+            const createCustomIcon = (color, size = 20) => {
+                return L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background: ${color}; width: ${size}px; height: ${size}px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [size, size],
+                    iconAnchor: [size/2, size/2]
+                });
+            };
+            
             // Marqueur de départ (vert)
             departMarker = L.marker([depart.latitude, depart.longitude], {
-                icon: L.divIcon({
-                    className: 'custom-marker',
-                    html: '<div style="background: #4ECDC4; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>',
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10]
-                })
+                icon: createCustomIcon('#4ECDC4')
             }).addTo(map).bindPopup(`<b>Départ:</b> ${depart.nom}`);
             
             // Marqueur d'arrivée (rouge)
             arriveeMarker = L.marker([arrivee.latitude, arrivee.longitude], {
-                icon: L.divIcon({
-                    className: 'custom-marker',
-                    html: '<div style="background: #FF6B6B; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>',
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10]
-                })
+                icon: createCustomIcon('#FF6B6B')
             }).addTo(map).bindPopup(`<b>Destination:</b> ${arrivee.nom}`);
             
             // Position actuelle (orange pulsante)
             if (position) {
                 positionMarker = L.marker([position.latitude, position.longitude], {
                     icon: L.divIcon({
-                        className: 'custom-marker',
-                        html: '<div style="background: #FF8C00; width: 25px; height: 25px; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 12px rgba(255,140,0,0.5); animation: pulse 2s infinite;"></div><style>@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }</style>',
+                        className: 'custom-marker pulse-marker',
+                        html: `<div style="background: #FF8C00; width: 25px; height: 25px; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 12px rgba(255,140,0,0.5);"></div>
+                               <style>.pulse-marker div { animation: pulse 2s infinite; } @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }</style>`,
                         iconSize: [25, 25],
                         iconAnchor: [12.5, 12.5]
                     })
                 }).addTo(map).bindPopup(`<b>Position actuelle:</b> ${position.nom}`);
             }
             
-            // Ligne de trajet
-            const routePoints = [
-                [depart.latitude, depart.longitude],
-                [arrivee.latitude, arrivee.longitude]
-            ];
-            
-            routeLine = L.polyline(routePoints, {
-                color: '#FF8C00',
-                weight: 4,
-                opacity: 0.7,
-                dashArray: '10, 10'
+            // Créer l'itinéraire avec Leaflet Routing Machine
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(depart.latitude, depart.longitude),
+                    L.latLng(arrivee.latitude, arrivee.longitude)
+                ],
+                routeWhileDragging: false,
+                addWaypoints: false,
+                createMarker: function() { return null; }, // Désactiver les marqueurs par défaut
+                lineOptions: {
+                    styles: [{
+                        color: '#FF8C00',
+                        weight: 4,
+                        opacity: 0.7
+                    }]
+                },
+                show: false, // Masquer les instructions de navigation
+                collapsible: true
             }).addTo(map);
             
             // Adapter la vue pour inclure tous les points
-            const group = new L.featureGroup([departMarker, arriveeMarker]);
-            if (positionMarker) group.addLayer(positionMarker);
-            map.fitBounds(group.getBounds().pad(0.1));
+            setTimeout(() => {
+                const group = new L.featureGroup([departMarker, arriveeMarker]);
+                if (positionMarker) group.addLayer(positionMarker);
+                
+                if (group.getLayers().length > 0) {
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+            }, 500);
             
             // Mettre à jour les informations textuelles
             document.getElementById('lieuDepart').textContent = depart.nom;
@@ -528,68 +580,88 @@
             .then(response => response.json())
             .then(data => {
                 if (data.statut === 'succès') {
-                    // Initialiser la carte si ce n'est pas déjà fait
-                    if (!map) {
-                        initMap();
-                    }
-                    
-                    // Afficher les résultats
-                    document.getElementById('trackingCode').textContent = code;
-                    document.getElementById('expediteur').textContent = data.data.expediteur || 'Non spécifié';
-                    document.getElementById('destinataire').textContent = data.data.destinataire || 'Non spécifié';
-                    document.getElementById('poids').textContent = data.data.poids || '- kg';
-                    document.getElementById('dateEnvoi').textContent = data.data.dateCreation ? 
-                        new Date(data.data.dateCreation).toLocaleDateString('fr-FR') : 
-                        new Date().toLocaleDateString('fr-FR');
-                    
-                    // Définir le badge de statut
-                    const statusBadge = document.getElementById('statusBadge');
-                    statusBadge.textContent = data.data.etat;
-                    statusBadge.className = 'inline-block px-6 py-3 rounded-full font-semibold text-lg ';
-                    
-                    if (data.data.etat === 'ARRIVE') {
-                        statusBadge.className += 'bg-emerald text-white';
-                    } else if (data.data.etat === 'EN_COURS') {
-                        statusBadge.className += 'bg-coral text-white';
-                    } else {
-                        statusBadge.className += 'bg-golden text-white';
-                    }
-                    
-                    // Afficher la carte avec le trajet
-                    if (data.data.coordonnees) {
-                        afficherTrajet(data.data.coordonnees);
-                    }
-                    
-                    // Timeline simple
-                    const timeline = document.getElementById('timeline');
-                    timeline.innerHTML = `
-                        <div class="timeline-item flex items-start">
-                            <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center status-completed mr-6">
-                                <i class="fas fa-check"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-lg font-semibold text-charcoal">Colis expédié</h4>
-                                <p class="text-medium-gray">${data.data.coordonnees ? data.data.coordonnees.depart.nom : 'Lieu de départ'}</p>
-                                <p class="text-sm text-medium-gray mt-1">${data.data.dateCreation ? new Date(data.data.dateCreation).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR')}</p>
-                            </div>
-                        </div>
-                        <div class="timeline-item flex items-start">
-                            <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center status-current mr-6">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-lg font-semibold text-charcoal">${data.data.message}</h4>
-                                <p class="text-medium-gray">Transport ${data.data.type_cargaison}</p>
-                                <p class="text-sm text-medium-gray mt-1">En cours</p>
-                            </div>
-                        </div>
-                    `;
-                    
+                    // Afficher la section de résultats
                     resultatSection.classList.remove('hidden');
-                    resultatSection.scrollIntoView({ behavior: 'smooth' });
                     
-                    // Démarrer les mises à jour en temps réel
-                    startRealTimeUpdates(code);
+                    // Attendre que la section soit visible pour initialiser la carte
+                    setTimeout(() => {
+                        // Initialiser la carte
+                        initMap();
+                        
+                        // Afficher les résultats
+                        document.getElementById('trackingCode').textContent = code;
+                        document.getElementById('expediteur').textContent = data.data.expediteur || 'Non spécifié';
+                        document.getElementById('destinataire').textContent = data.data.destinataire || 'Non spécifié';
+                        document.getElementById('poids').textContent = data.data.poids || '- kg';
+                        document.getElementById('dateEnvoi').textContent = data.data.dateCreation ? 
+                            new Date(data.data.dateCreation).toLocaleDateString('fr-FR') : 
+                            new Date().toLocaleDateString('fr-FR');
+                        
+                        // Définir le badge de statut
+                        const statusBadge = document.getElementById('statusBadge');
+                        statusBadge.textContent = data.data.etat;
+                        statusBadge.className = 'inline-block px-6 py-3 rounded-full font-semibold text-lg ';
+                        
+                        if (data.data.etat === 'ARRIVE') {
+                            statusBadge.className += 'bg-emerald text-white';
+                        } else if (data.data.etat === 'EN_COURS') {
+                            statusBadge.className += 'bg-coral text-white';
+                        } else {
+                            statusBadge.className += 'bg-golden text-white';
+                        }
+                        
+                        // Créer des coordonnées par défaut si elles n'existent pas
+                        const coordonnees = data.data.coordonnees || {
+                            depart: {
+                                latitude: 14.6937,
+                                longitude: -17.4441,
+                                nom: 'Dakar, Sénégal'
+                            },
+                            arrivee: {
+                                latitude: 48.8566,
+                                longitude: 2.3522,
+                                nom: 'Paris, France'
+                            },
+                            position_actuelle: {
+                                latitude: 14.7,
+                                longitude: -17.4,
+                                nom: 'En transit'
+                            }
+                        };
+                        
+                        // Afficher la carte avec le trajet
+                        afficherTrajet(coordonnees);
+                        
+                        // Timeline simple
+                        const timeline = document.getElementById('timeline');
+                        timeline.innerHTML = `
+                            <div class="timeline-item flex items-start">
+                                <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center status-completed mr-6">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="text-lg font-semibold text-charcoal">Colis expédié</h4>
+                                    <p class="text-medium-gray">${coordonnees.depart.nom}</p>
+                                    <p class="text-sm text-medium-gray mt-1">${data.data.dateCreation ? new Date(data.data.dateCreation).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR')}</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item flex items-start">
+                                <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center status-current mr-6">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="text-lg font-semibold text-charcoal">${data.data.message}</h4>
+                                    <p class="text-medium-gray">Transport ${data.data.typeCargaison || 'MARITIME'}</p>
+                                    <p class="text-sm text-medium-gray mt-1">En cours</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Démarrer les mises à jour en temps réel
+                        startRealTimeUpdates(code);
+                    }, 200);
+                    
+                    resultatSection.scrollIntoView({ behavior: 'smooth' });
                 } else {
                     // Afficher "aucun résultat"
                     aucunResultatSection.classList.remove('hidden');
@@ -614,7 +686,9 @@
                 if (departMarker) map.removeLayer(departMarker);
                 if (arriveeMarker) map.removeLayer(arriveeMarker);
                 if (positionMarker) map.removeLayer(positionMarker);
-                if (routeLine) map.removeLayer(routeLine);
+                if (routingControl) map.removeControl(routingControl);
+                map.remove();
+                map = null;
             }
             
             // Arrêter les mises à jour en temps réel

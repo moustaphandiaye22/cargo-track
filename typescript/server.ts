@@ -11,6 +11,28 @@ async function main() {
         let result: {statut: string, data?: unknown, message?: string, commands?: string[]};
         
         switch (command) {
+            case 'login':
+                const loginData = JSON.parse(args[1] || '{}');
+                result = await ApiController.login(loginData);
+                break;
+                
+            case 'validate-token':
+                if (!args[1]) {
+                    result = { statut: 'erreur', message: 'Token requis' };
+                } else {
+                    result = await ApiController.validateToken(args[1]);
+                }
+                break;
+                
+            case 'logout':
+                result = await ApiController.logout();
+                break;
+                
+            case 'create-user':
+                const userData = JSON.parse(args[1] || '{}');
+                result = await ApiController.createUser(userData);
+                break;
+                
             case 'suivi':
                 if (!args[1]) {
                     result = { statut: 'erreur', message: 'Code de suivi requis' };
@@ -50,6 +72,10 @@ async function main() {
                     statut: 'erreur',
                     message: 'Commande non reconnue',
                     commands: [
+                        'login <json>',
+                        'validate-token <token>',
+                        'logout',
+                        'create-user <json>',
                         'suivi <code>',
                         'creer-cargaison <json>',
                         'ajouter-colis <json>',

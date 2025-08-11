@@ -16,15 +16,40 @@ export declare class RecuService {
     /**
      * Convertit un reçu en format JSON pour la sauvegarde
      * @param recu Le reçu à convertir
-     * @returns any L'objet JSON représentant le reçu
+     * @returns object L'objet JSON représentant le reçu
      */
-    static recuVersJSON(recu: Recu): any;
+    static recuVersJSON(recu: Recu): object;
     /**
      * Crée un reçu à partir de données JSON
      * @param jsonData Les données JSON du reçu
      * @returns Recu Le reçu créé
      */
-    static jsonVersRecu(jsonData: any): Recu;
+    static jsonVersRecu(jsonData: {
+        numerorecu: string;
+        dateEmission: string;
+        montanttotal: number;
+        colis: {
+            code: string;
+            nombre: number;
+            poids: number;
+            prix: number;
+            typeProduit: string;
+            etat: string;
+            dateCreation: string;
+        };
+        expediteur: {
+            nom: string;
+            prenom: string;
+            telephone: string;
+            adresse: string;
+        };
+        destinataire: {
+            nom: string;
+            prenom: string;
+            telephone: string;
+            adresse: string;
+        };
+    }): Recu;
     /**
      * Convertit le type de transport en libellé lisible
      * @param type Le type de transport

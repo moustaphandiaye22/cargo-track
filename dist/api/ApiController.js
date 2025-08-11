@@ -4,8 +4,24 @@ exports.ApiController = void 0;
 const CargaisonService_1 = require("../service/CargaisonService");
 const DataManager_1 = require("../data/DataManager");
 const TypeCargaison_1 = require("../Enum/TypeCargaison");
+const EtatGlobal_1 = require("../Enum/EtatGlobal");
+const EtatAvancement_1 = require("../Enum/EtatAvancement");
 const Colis_1 = require("../entity/Colis");
+const AuthService_1 = require("../service/AuthService");
 class ApiController {
+    // API d'authentification
+    static async login(credentials) {
+        return await AuthService_1.AuthService.login(credentials);
+    }
+    static async validateToken(token) {
+        return await AuthService_1.AuthService.validateToken(token);
+    }
+    static async logout() {
+        return await AuthService_1.AuthService.logout();
+    }
+    static async createUser(userData) {
+        return await AuthService_1.AuthService.createUser(userData);
+    }
     // API pour le suivi des colis
     static async suivreColis(code) {
         try {
@@ -40,23 +56,25 @@ class ApiController {
             };
         }
     }
-    // API pour créer une nouvelle cargaison
     static async creerCargaison(data) {
         try {
             const typeCargaison = data.type.toUpperCase();
-            // Utiliser le service existant pour la logique métier
             const service = new CargaisonService_1.CargaisonService(typeCargaison);
             service.creerCargaison();
-            // Sauvegarder dans le JSON
             const cargaisonData = {
+                id: 0, // sera assigné par DataManager
+                numero: 0, // sera assigné par DataManager
                 type: typeCargaison,
-                etatGlobal: 'OUVERT',
-                etatAvancement: 'EN_ATTENTE',
+                etatglobal: EtatGlobal_1.EtatGlobal.OUVERT,
+                etatAvancement: EtatAvancement_1.EtatAvancement.EN_ATTENTE,
                 poidsMax: data.capacite,
+                prixtotal: 0,
+                distance: 0,
                 lieuDepart: { nom: data.lieuDepart },
                 lieuArrive: { nom: data.lieuArrive },
-                dateDepart: data.dateDepart,
-                dateArrive: data.dateArrive
+                datedepart: data.dateDepart,
+                datedarrive: data.dateArrive,
+                dateCreation: new Date().toISOString().split('T')[0]
             };
             const success = await DataManager_1.DataManager.saveNewCargaison(cargaisonData);
             if (success) {
@@ -83,31 +101,34 @@ class ApiController {
             };
         }
     }
-    // API pour ajouter un colis
     static async ajouterColis(data) {
         try {
             const typeCargaison = data.typeCargaison.toUpperCase();
             const typeProduit = data.typeProduit.toUpperCase();
-            // Utiliser le service existant pour la validation
             const service = new CargaisonService_1.CargaisonService(typeCargaison);
             const colis = new Colis_1.Colis();
             colis.setTypeproduit(typeProduit);
             colis.setPoids(data.poids);
             colis.setPrix(data.prix);
-            // Appliquer la logique métier du service
             const result = service.ajouterproduit(colis);
-            // Sauvegarder dans le JSON
             const colisData = {
+                id: 0, // sera assigné par DataManager
                 code: result.getCode(),
                 nombre: 1,
                 poids: data.poids,
                 prix: data.prix,
-                typeProduit: typeProduit,
+                typeproduit: typeProduit,
                 etat: 'EN_ATTENTE',
-                expediteur: data.expediteur,
-                destinataire: data.destinataire,
+                expediteur: {
+                    id: 0,
+                    ...data.expediteur
+                },
+                destinataire: {
+                    id: 0,
+                    ...data.destinataire
+                },
                 dateCreation: new Date().toISOString().split('T')[0],
-                cargaisonId: null
+                cargaisonId: undefined
             };
             const success = await DataManager_1.DataManager.saveNewColis(colisData);
             if (success) {
@@ -134,7 +155,6 @@ class ApiController {
             };
         }
     }
-    // API pour obtenir toutes les cargaisons
     static async getAllCargaisons() {
         try {
             const cargaisons = await DataManager_1.DataManager.getAllCargaisons();
@@ -144,12 +164,12 @@ class ApiController {
                     id: c.id,
                     numero: c.numero,
                     type: c.type,
-                    etat: c.etatGlobal,
+                    etat: c.etatglobal,
                     avancement: c.etatAvancement,
                     lieuDepart: c.lieuDepart?.nom || 'Non défini',
                     lieuArrive: c.lieuArrive?.nom || 'Non défini',
-                    dateDepart: c.dateDepart,
-                    dateArrive: c.dateArrive
+                    dateDepart: c.datedepart,
+                    dateArrive: c.datedarrive
                 }))
             };
         }
@@ -161,7 +181,6 @@ class ApiController {
             };
         }
     }
-    // API pour obtenir tous les colis
     static async getAllColis() {
         try {
             const colis = await DataManager_1.DataManager.getAllColis();
@@ -170,7 +189,7 @@ class ApiController {
                 data: colis.map(c => ({
                     id: c.id,
                     code: c.code,
-                    typeProduit: c.typeProduit,
+                    typeProduit: c.typeproduit,
                     etat: c.etat,
                     poids: c.poids,
                     prix: c.prix,
@@ -188,16 +207,12 @@ class ApiController {
             };
         }
     }
-    // API pour changer l'état d'un colis
     static async changerEtatColis(code, nouvelEtat) {
         try {
-            // Utiliser le service existant pour la logique métier
-            const typeCargaison = TypeCargaison_1.TypeCargaison.MARITIME; // Par défaut
+            const typeCargaison = TypeCargaison_1.TypeCargaison.MARITIME;
             const service = new CargaisonService_1.CargaisonService(typeCargaison);
-            // Appliquer la logique métier
             const success = service.changerEtatColis(code, nouvelEtat);
             if (success) {
-                // Sauvegarder dans le JSON
                 await DataManager_1.DataManager.updateColisEtat(code, nouvelEtat.toUpperCase());
                 return {
                     statut: 'succès',

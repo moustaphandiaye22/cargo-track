@@ -8,8 +8,34 @@ import { EtatGlobal } from '../Enum/EtatGlobal';
 import { EtatAvancement } from '../Enum/EtatAvancement';
 import { Colis } from '../entity/Colis';
 import { Personne } from '../entity/Personne';
+import { AuthService, LoginRequest, AuthResponse } from '../service/AuthService';
 
 export class ApiController {
+    
+    // API d'authentification
+    static async login(credentials: LoginRequest): Promise<AuthResponse> {
+        return await AuthService.login(credentials);
+    }
+
+    static async validateToken(token: string): Promise<AuthResponse> {
+        return await AuthService.validateToken(token);
+    }
+
+    static async logout(): Promise<AuthResponse> {
+        return await AuthService.logout();
+    }
+
+    static async createUser(userData: {
+        nom: string;
+        prenom: string;
+        email: string;
+        password: string;
+        type: TypePersonne;
+        adresse: string;
+        telephone: string;
+    }): Promise<AuthResponse> {
+        return await AuthService.createUser(userData);
+    }
     
     // API pour le suivi des colis
     static async suivreColis(code: string): Promise<{statut: string, data?: object, message?: string}> {
