@@ -1,4 +1,7 @@
-export class Coordonnee {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Coordonnee = void 0;
+class Coordonnee {
     constructor(latitude, longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
@@ -22,3 +25,5 @@ export class Coordonnee {
         return R * c;
     }
 }
+exports.Coordonnee = Coordonnee;
+//# sourceMappingURL=Coordonnee.js.map

@@ -1,4 +1,7 @@
-export class Cargaison {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Cargaison = void 0;
+class Cargaison {
     constructor() {
         this.MAX_PRODUIT = 10;
     }
@@ -41,3 +44,5 @@ export class Cargaison {
         return true;
     }
 }
+exports.Cargaison = Cargaison;
+//# sourceMappingURL=Cargaison.js.map

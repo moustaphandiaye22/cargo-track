@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Leaflet - CargoTrack</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 1rem;
+            z-index: 0;
+            border: 2px solid #ccc;
+        }
+        
+        .map-container {
+            border: 2px solid #ECF0F1;
+            border-radius: 1rem;
+            overflow: hidden;
+            width: 100%;
+            height: 400px;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        /* Masquer le panneau d'instructions de Leaflet Routing Machine */
+        .leaflet-routing-container {
+            display: none !important;
+        }
+        
+        /* Optimiser l'affichage des marqueurs personnalisés */
+        .custom-marker {
+            border: none !important;
+            background: transparent !important;
+        }
+        
+        .controls {
+            margin: 20px 0;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #FF8C00;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #e67e00;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Leaflet - Suivi de Colis</h1>
+    
+    <div class="controls">
+        <button onclick="initMap()">Initialiser la carte</button>
+        <button onclick="afficherTrajetTest()">Afficher trajet test</button>
+        <button onclick="resetMap()">Reset</button>
+    </div>
+    
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+    
+    <div id="status">Status: Cliquez sur "Initialiser la carte" pour commencer</div>
+
+    <script>
+        let map;
+        let departMarker, arriveeMarker, positionMarker;
+        let routingControl;
+        
+        function initMap() {
+            document.getElementById('status').textContent = 'Initialisation de la carte...';
+            
+            if (map) {
+                map.remove();
+            }
+            
+            // Créer la carte centrée sur le Sénégal
+            map = L.map('map', {
+                zoomControl: true,
+                scrollWheelZoom: true,
+                doubleClickZoom: true,
+                dragging: true
+            }).setView([14.6937, -17.4441], 6);
+            
+            // Ajouter les tuiles OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
+            
+            // Forcer l'invalidation de la taille après un court délai
+            setTimeout(() => {
+                map.invalidateSize();
+                document.getElementById('status').textContent = 'Carte initialisée! Utilisez les boutons de zoom et navigation.';
+            }, 100);
+        }
+        
+        function afficherTrajetTest() {
+            if (!map) {
+                document.getElementById('status').textContent = 'Erreur: Initialisez d\'abord la carte!';
+                return;
+            }
+            
+            document.getElementById('status').textContent = 'Affichage du trajet test...';
+            
+            // Nettoyer les anciens marqueurs et routes
+            if (departMarker) map.removeLayer(departMarker);
+            if (arriveeMarker) map.removeLayer(arriveeMarker);
+            if (positionMarker) map.removeLayer(positionMarker);
+            if (routingControl) map.removeControl(routingControl);
+            
+            // Données de test
+            const coordonnees = {
+                depart: {
+                    latitude: 14.6937,
+                    longitude: -17.4441,
+                    nom: 'Dakar, Sénégal'
+                },
+                arrivee: {
+                    latitude: 48.8566,
+                    longitude: 2.3522,
+                    nom: 'Paris, France'
+                },
+                position_actuelle: {
+                    latitude: 27.7518,
+                    longitude: -15.9982,
+                    nom: 'Océan Atlantique'
+                }
+            };
+            
+            // Créer des icônes personnalisées
+            const createCustomIcon = (color, size = 20) => {
+                return L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background: ${color}; width: ${size}px; height: ${size}px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [size, size],
+                    iconAnchor: [size/2, size/2]
+                });
+            };
+            
+            // Marqueur de départ (vert)
+            departMarker = L.marker([coordonnees.depart.latitude, coordonnees.depart.longitude], {
+                icon: createCustomIcon('#4ECDC4')
+            }).addTo(map).bindPopup(`<b>Départ:</b> ${coordonnees.depart.nom}`);
+            
+            // Marqueur d'arrivée (rouge)
+            arriveeMarker = L.marker([coordonnees.arrivee.latitude, coordonnees.arrivee.longitude], {
+                icon: createCustomIcon('#FF6B6B')
+            }).addTo(map).bindPopup(`<b>Destination:</b> ${coordonnees.arrivee.nom}`);
+            
+            // Position actuelle (orange pulsante)
+            positionMarker = L.marker([coordonnees.position_actuelle.latitude, coordonnees.position_actuelle.longitude], {
+                icon: L.divIcon({
+                    className: 'custom-marker pulse-marker',
+                    html: `<div style="background: #FF8C00; width: 25px; height: 25px; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 12px rgba(255,140,0,0.5); animation: pulse 2s infinite;"></div>
+                           <style>@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }</style>`,
+                    iconSize: [25, 25],
+                    iconAnchor: [12.5, 12.5]
+                })
+            }).addTo(map).bindPopup(`<b>Position actuelle:</b> ${coordonnees.position_actuelle.nom}`);
+            
+            // Créer l'itinéraire avec Leaflet Routing Machine
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(coordonnees.depart.latitude, coordonnees.depart.longitude),
+                    L.latLng(coordonnees.arrivee.latitude, coordonnees.arrivee.longitude)
+                ],
+                routeWhileDragging: false,
+                addWaypoints: false,
+                createMarker: function() { return null; }, // Désactiver les marqueurs par défaut
+                lineOptions: {
+                    styles: [{
+                        color: '#FF8C00',
+                        weight: 4,
+                        opacity: 0.7
+                    }]
+                },
+                show: false, // Masquer les instructions de navigation
+                collapsible: true
+            }).addTo(map);
+            
+            // Adapter la vue pour inclure tous les points
+            setTimeout(() => {
+                const group = new L.featureGroup([departMarker, arriveeMarker, positionMarker]);
+                
+                if (group.getLayers().length > 0) {
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+                
+                document.getElementById('status').textContent = 'Trajet affiché! Vous pouvez cliquer sur les marqueurs pour plus d\'informations.';
+            }, 500);
+        }
+        
+        function resetMap() {
+            if (map) {
+                if (departMarker) map.removeLayer(departMarker);
+                if (arriveeMarker) map.removeLayer(arriveeMarker);
+                if (positionMarker) map.removeLayer(positionMarker);
+                if (routingControl) map.removeControl(routingControl);
+                map.remove();
+                map = null;
+            }
+            
+            document.getElementById('status').textContent = 'Carte reset. Cliquez sur "Initialiser la carte" pour recommencer.';
+        }
+    </script>
+</body>
+</html>

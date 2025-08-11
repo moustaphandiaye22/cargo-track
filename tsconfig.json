@@ -1,10 +1,28 @@
-{ "compilerOptions": {
-    "target": "es2016",
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": ["es2020", "dom"],
+    "module": "commonjs",
     "outDir": "./dist",
-    "strict": true
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": false,
+    "noEmit": false,
+    "declaration": true,
+    "sourceMap": true
   },
   "include": [
-    "src/**/*",
-    "src/service/**/*"
+    "typescript/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "back",
+    "src"
   ]
 }

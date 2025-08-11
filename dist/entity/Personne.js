@@ -1,4 +1,7 @@
-export class Personne {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Personne = void 0;
+class Personne {
     constructor() {
     }
     getId() { return this.id; }
@@ -34,3 +37,5 @@ export class Personne {
     setType(type) { this.type = type; }
     ;
 }
+exports.Personne = Personne;
+//# sourceMappingURL=Personne.js.map
