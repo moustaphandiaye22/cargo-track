@@ -6,7 +6,6 @@ class Dashboard {
     constructor() {
         this.init();
     }
-
    
     init() {
         

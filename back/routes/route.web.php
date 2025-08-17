@@ -1,8 +1,6 @@
 <?php
 
-// Inclure la logique métier
-require_once dirname(__DIR__) . '/validation/BusinessLogic.php';
-require_once dirname(__DIR__) . '/utils/RecuGenerator.php';
+
 require_once dirname(__DIR__) . '/app/core/TypeScriptAuth.php';
 
 use App\Core\TypeScriptAuth;
@@ -46,27 +44,15 @@ $routes[] = [
             }
         }
         
-        // Vérification avec la logique métier
-        $canAdd = BusinessLogic::canAddPackageToShipment($cargaisonTrouvee);
-        if (!$canAdd['valid']) {
-            $_SESSION['error_message'] = $canAdd['message'];
+        // Vérifications de base déplacées vers TypeScript API
+        if ($cargaisonTrouvee['etatGlobal'] === 'FERME') {
+            $_SESSION['error_message'] = 'La cargaison est fermée, impossible d\'ajouter des produits';
             header('Location: /dashboard');
             exit();
         }
 
-        // Validation métier selon le type de transport
-        $typeCargaison = $cargaisonTrouvee['type'];
-        $typeProduit = $_POST['typeproduit'];
-        
-        $validation = BusinessLogic::validateProductTransport($typeCargaison, $typeProduit);
-        if (!$validation['valid']) {
-            $_SESSION['error_message'] = $validation['message'];
-            header('Location: /dashboard');
-            exit();
-        }
-
-        // Appliquer le prix minimum (logique métier TS)
-        $prix = BusinessLogic::applyMinimumPrice((float)$_POST['prix']);
+        // Appliquer le prix minimum
+        $prix = (float)$_POST['prix'] < 10000 ? 10000 : (float)$_POST['prix'];
 
         // Générer un nouvel ID unique pour le colis
         $newColisId = count($data['colis']) > 0 ? max(array_column($data['colis'], 'id')) + 1 : 1;
@@ -80,9 +66,9 @@ $routes[] = [
             'code' => $codeGenere,
             'nombre' => (int)$_POST['nombre'],
             'poids' => (float)$_POST['poids'],
-            'prix' => $prix, // Prix avec minimum appliqué
-            'typeProduit' => $typeProduit,
-            'etat' => 'EN_ATTENTE', // Toujours EN_ATTENTE à la création (logique TS)
+            'prix' => $prix, 
+            'typeProduit' => $_POST['typeproduit'],
+            'etat' => 'EN_ATTENTE', 
             'expediteur' => [
                 'nom' => $_POST['expediteur_nom'],
                 'prenom' => $_POST['expediteur_prenom'],
@@ -114,19 +100,24 @@ $routes[] = [
 
         file_put_contents($dbPath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
-        // Générer le reçu avec la logique TypeScript
-        $recu = RecuGenerator::genererRecu($nouveauColis, $cargaisonTrouvee);
+        // Générer reçu simple (sans appel complexe TypeScript)
+        $numeroRecu = "REC" . str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT);
+        $recu = [
+            'numerorecu' => $numeroRecu,
+            'dateEmission' => date('Y-m-d H:i:s'),
+            'colis' => $nouveauColis,
+            'expediteur' => $nouveauColis['expediteur'],
+            'destinataire' => $nouveauColis['destinataire'],
+            'montanttotal' => $nouveauColis['prix']
+        ];
         
-        if ($recu) {
-            // Sauvegarder le reçu
-            RecuGenerator::sauvegarderRecu($recu);
-            
-            // Stocker le numéro de reçu dans la session pour redirection
-            $_SESSION['recu_genere'] = $recu['numerorecu'];
-            $_SESSION['success_message'] = "Colis {$nouveauColis['code']} ajouté avec succès ! Reçu {$recu['numerorecu']} généré.";
-        } else {
-            $_SESSION['success_message'] = "Colis {$nouveauColis['code']} ajouté avec succès !";
-        }
+        // Sauvegarder le reçu
+        if (!isset($data['recus'])) $data['recus'] = [];
+        $data['recus'][] = $recu;
+        file_put_contents($dbPath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        
+        $_SESSION['recu_genere'] = $numeroRecu;
+        $_SESSION['success_message'] = "Colis {$nouveauColis['code']} ajouté avec succès ! Reçu {$numeroRecu} généré.";
         
         header('Location: /dashboard');
         exit();
@@ -444,7 +435,19 @@ $routes[] = [
             exit();
         }
         
-        $recu = RecuGenerator::getRecuParNumero($numeroRecu);
+        // Récupérer le reçu depuis la base de données
+        $dbPath = dirname(__DIR__) . '/data/database.json';
+        $data = file_exists($dbPath) ? json_decode(file_get_contents($dbPath), true) : [];
+        
+        $recu = null;
+        if (isset($data['recus'])) {
+            foreach ($data['recus'] as $r) {
+                if ($r['numerorecu'] === $numeroRecu) {
+                    $recu = $r;
+                    break;
+                }
+            }
+        }
         
         if (!$recu) {
             $_SESSION['error_message'] = "Reçu $numeroRecu non trouvé";
@@ -452,8 +455,8 @@ $routes[] = [
             exit();
         }
         
-        // Afficher le reçu
-        echo RecuGenerator::genererHTMLRecu($recu);
+        // Afficher le reçu avec le template
+        include dirname(__DIR__) . '/template/recu/recu_template.php';
     }
 ];
 

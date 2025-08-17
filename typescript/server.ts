@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { ApiController } from './api/ApiController';
+import { MESSAGES } from './messages/Message';
 
 // Fonction principale pour traiter les commandes
 async function main() {
@@ -18,7 +19,7 @@ async function main() {
                 
             case 'validate-token':
                 if (!args[1]) {
-                    result = { statut: 'erreur', message: 'Token requis' };
+                    result = { statut: 'erreur', message: MESSAGES.INVALID_TOKEN };
                 } else {
                     result = await ApiController.validateToken(args[1]);
                 }
@@ -35,7 +36,7 @@ async function main() {
                 
             case 'suivi':
                 if (!args[1]) {
-                    result = { statut: 'erreur', message: 'Code de suivi requis' };
+                    result = { statut: 'erreur', message: MESSAGES.CODE_SUIVI_REQUIS };
                 } else {
                     result = await ApiController.suivreColis(args[1]);
                 }
@@ -61,7 +62,7 @@ async function main() {
                 
             case 'changer-etat':
                 if (!args[1] || !args[2]) {
-                    result = { statut: 'erreur', message: 'Code et nouvel état requis' };
+                    result = { statut: 'erreur', message: MESSAGES.CODE_ETAT_REQUIS };
                 } else {
                     result = await ApiController.changerEtatColis(args[1], args[2]);
                 }
@@ -70,7 +71,7 @@ async function main() {
             default:
                 result = {
                     statut: 'erreur',
-                    message: 'Commande non reconnue',
+                    message: MESSAGES.COMMANDE_NON_RECONNUE,
                     commands: [
                         'login <json>',
                         'validate-token <token>',
@@ -92,7 +93,7 @@ async function main() {
     } catch (error) {
         console.log(JSON.stringify({
             statut: 'erreur',
-            message: 'Erreur serveur: ' + (error instanceof Error ? error.message : 'Erreur inconnue')
+            message: MESSAGES.ERREUR_SERVEUR + ': ' + (error instanceof Error ? error.message : 'Erreur inconnue')
         }));
         process.exit(1);
     }

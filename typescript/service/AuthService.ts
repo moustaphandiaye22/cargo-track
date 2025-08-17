@@ -3,6 +3,7 @@ import { TypePersonne } from "../Enum/TypePersonne";
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { MESSAGES } from '../messages/Message';
 
 export interface LoginRequest {
     email: string;
@@ -124,7 +125,7 @@ export class AuthService {
             if (!email || !password) {
                 return {
                     statut: 'erreur',
-                    message: 'Email et mot de passe requis'
+                    message: MESSAGES.INVALID_EMAIL
                 };
             }
 
@@ -136,7 +137,7 @@ export class AuthService {
             if (!user) {
                 return {
                     statut: 'erreur',
-                    message: 'Identifiants invalides'
+                    message: MESSAGES.INVALID_CREDENTIALS
                 };
             }
 
@@ -144,7 +145,7 @@ export class AuthService {
             if (user.getType() !== TypePersonne.GESTIONNAIRE) {
                 return {
                     statut: 'erreur',
-                    message: 'Accès réservé aux gestionnaires'
+                    message: MESSAGES.INVALID_TYPE
                 };
             }
 
@@ -152,7 +153,7 @@ export class AuthService {
 
             return {
                 statut: 'succès',
-                message: 'Connexion réussie',
+                message: MESSAGES.CONNEXION_SUCCESS,
                 user: {
                     id: user.getId(),
                     nom: user.getNom(),
@@ -165,7 +166,7 @@ export class AuthService {
         } catch (error) {
             return {
                 statut: 'erreur',
-                message: 'Erreur lors de la connexion'
+                message: MESSAGES.ERROR_CONNEXION
             };
         }
     }
@@ -175,7 +176,7 @@ export class AuthService {
             if (!token) {
                 return {
                     statut: 'erreur',
-                    message: 'Token manquant'
+                    message: MESSAGES.INVALID_TOKEN
                 };
             }
 
@@ -185,7 +186,7 @@ export class AuthService {
             if (!user) {
                 return {
                     statut: 'erreur',
-                    message: 'Token invalide'
+                    message: MESSAGES.INVALID_TOKEN
                 };
             }
 
@@ -194,7 +195,7 @@ export class AuthService {
             if (tokenAge > 24 * 60 * 60 * 1000) {
                 return {
                     statut: 'erreur',
-                    message: 'Token expiré'
+                    message: MESSAGES.EXPIRE_TOKEN
                 };
             }
 
@@ -211,7 +212,7 @@ export class AuthService {
         } catch (error) {
             return {
                 statut: 'erreur',
-                message: 'Token invalide'
+                message: MESSAGES.INVALID_TOKEN
             };
         }
     }
@@ -219,7 +220,7 @@ export class AuthService {
     static async logout(): Promise<AuthResponse> {
         return {
             statut: 'succès',
-            message: 'Déconnexion réussie'
+            message: MESSAGES.LOGOUT
         };
     }
 
@@ -237,7 +238,7 @@ export class AuthService {
             if (userData.type !== TypePersonne.GESTIONNAIRE) {
                 return {
                     statut: 'erreur',
-                    message: 'Seuls les gestionnaires peuvent être créés'
+                    message: MESSAGES.ONLY_GESTIONNAIRE
                 };
             }
 
@@ -246,7 +247,7 @@ export class AuthService {
             if (existingUser) {
                 return {
                     statut: 'erreur',
-                    message: 'Cet email est déjà utilisé'
+                    message: MESSAGES.MAIL_ALREADY_EXISTE
                 };
             }
 
@@ -267,7 +268,7 @@ export class AuthService {
 
             return {
                 statut: 'succès',
-                message: 'Gestionnaire créé avec succès',
+                message: MESSAGES.SUCCES_CREATE_GEST,
                 user: {
                     id: newUser.getId(),
                     nom: newUser.getNom(),
@@ -279,7 +280,7 @@ export class AuthService {
         } catch (error) {
             return {
                 statut: 'erreur',
-                message: 'Erreur lors de la création du gestionnaire'
+                message: MESSAGES.ERROR_CREATE_GEST
             };
         }
     }

@@ -10,10 +10,10 @@ import { EtatAvancement } from "../Enum/EtatAvancement";
 import { EtatColis } from "../Enum/EtatColis";
 import { CodeGenerator } from "./CodeGenerator";
 import { Recu } from "../entity/Recu";
+import { MESSAGES } from '../messages/Message';
 
 export class CargaisonService  implements InterfaceCargaison{
     private type: TypeCargaison;
-    private types!:TypeColis;
     private cargaison!: Cargaison;
     
     constructor(type: TypeCargaison){
@@ -29,7 +29,7 @@ export class CargaisonService  implements InterfaceCargaison{
             this.cargaison.setEtatglobal(EtatGlobal.OUVERT);
             this.cargaison.setEtatAvancement(EtatAvancement.EN_ATTENTE);
             this.cargaison.setNumero(CodeGenerator.genererNumeroCargaison());
-            console.log(`Cargaison ${this.type} créée avec succès`);
+            console.log(MESSAGES.SUCCES_CREATE_CARGAISON);
         }catch(error){
             console.error('Erreur lors de la création de la cargaison',error);
         }
@@ -38,7 +38,7 @@ export class CargaisonService  implements InterfaceCargaison{
     ajouterproduit(colis:Colis):Colis{
         try{
             if(this.cargaison.getEtatglobal() === EtatGlobal.FERME){
-                console.log("Erreur: La cargaison est fermée, impossible d'ajouter des produits!");
+                console.log(MESSAGES.CARGAISON_FERMER);
                 return colis;
             }
 
@@ -69,10 +69,10 @@ export class CargaisonService  implements InterfaceCargaison{
                 this.cargaison.setSesproduit(produits);
             }
             
-            console.log('Produit ajouté avec succès');
+            console.log(MESSAGES.SUCCES_CREATE_COLIS);
             return colis;
         }catch(error){
-            console.error('Erreur lors de l\'ajout du produit',error);
+            console.error(MESSAGES.ERROR_CREATE_COLIS, error);
             return colis;
         }
     }
@@ -103,11 +103,10 @@ export class CargaisonService  implements InterfaceCargaison{
         return total;
     }
 
-    getFraisParType(typeColis?: TypeColis):number{
-        const typeAUtiliser = typeColis || this.types;
+    getFraisParType(typeColis: TypeColis):number{
         
         if(this.type===TypeCargaison.MARITIME){
-            switch(typeAUtiliser){
+            switch(typeColis){
                 case TypeColis.ALIMENTAIRE: return 90;
                 case TypeColis.CHIMIQUE: return 500;
                 case TypeColis.FRAGILE: return 400;
@@ -116,7 +115,7 @@ export class CargaisonService  implements InterfaceCargaison{
                 default: return 0;
             }
         }else if(this.type===TypeCargaison.AERIENNE){
-            switch(typeAUtiliser){
+            switch(typeColis){
                 case TypeColis.ALIMENTAIRE: return 300;
                 case TypeColis.CHIMIQUE: return 0; // Interdit
                 case TypeColis.FRAGILE: return 100;
@@ -125,7 +124,7 @@ export class CargaisonService  implements InterfaceCargaison{
                 default: return 0;
             }
         }else if(this.type===TypeCargaison.ROUTIERE){
-            switch(typeAUtiliser){
+            switch(typeColis){
                 case TypeColis.ALIMENTAIRE: return 100;
                 case TypeColis.CHIMIQUE: return 0; // Interdit
                 case TypeColis.FRAGILE: return 200;
@@ -151,7 +150,7 @@ export class CargaisonService  implements InterfaceCargaison{
             }
         }
         
-        console.log('Colis non trouvé');
+    console.log('Colis non trouvé');
         return new Colis();
     }
 
@@ -172,7 +171,7 @@ export class CargaisonService  implements InterfaceCargaison{
             }
         }
         
-        console.log('Aucune cargaison trouvée avec ces critères');
+    console.log('Aucune cargaison trouvée avec ces critères');
         return new Cargaison();
     }
 
@@ -190,7 +189,7 @@ export class CargaisonService  implements InterfaceCargaison{
         }
         
         this.cargaison.setEtatglobal(EtatGlobal.FERME);
-        console.log("Cargaison fermée avec succès");
+    console.log("Cargaison fermée avec succès");
         return true;
     }
 
@@ -207,7 +206,7 @@ export class CargaisonService  implements InterfaceCargaison{
             return true;
         }
         
-        console.log("Impossible de rouvrir: la cargaison doit être fermée et en attente");
+    console.log("Impossible de rouvrir: la cargaison doit être fermée et en attente");
         return false;
     }
 
@@ -218,7 +217,7 @@ export class CargaisonService  implements InterfaceCargaison{
             console.log(`Colis ${code} marqué comme récupéré`);
             return true;
         }
-        console.log(`Colis ${code} non trouvé`);
+    console.log(`Colis ${code} non trouvé`);
         return false;
     }
 
@@ -229,7 +228,7 @@ export class CargaisonService  implements InterfaceCargaison{
             console.log(`Colis ${code} marqué comme perdu`);
             return true;
         }
-        console.log(`Colis ${code} non trouvé`);
+    console.log(`Colis ${code} non trouvé`);
         return false;
     }
 
@@ -241,7 +240,7 @@ export class CargaisonService  implements InterfaceCargaison{
             console.log(`Colis ${code} archivé`);
             return true;
         }
-        console.log(`Colis ${code} non trouvé`);
+    console.log(`Colis ${code} non trouvé`);
         return false;
     }
 
@@ -257,7 +256,7 @@ export class CargaisonService  implements InterfaceCargaison{
             console.log(`Colis ${code} annulé`);
             return true;
         }
-        console.log(`Colis ${code} non trouvé`);
+    console.log(`Colis ${code} non trouvé`);
         return false;
     }
 
@@ -268,7 +267,7 @@ export class CargaisonService  implements InterfaceCargaison{
             console.log(`État du colis ${code} changé vers ${nouvelEtat}`);
             return true;
         }
-        console.log(`Colis ${code} non trouvé`);
+    console.log(`Colis ${code} non trouvé`);
         return false;
     }
 
@@ -279,7 +278,7 @@ export class CargaisonService  implements InterfaceCargaison{
         recu.setExpediteur(expediteur);
         recu.setDestinataire(destinataire);
         recu.setMontanttotal(this.calculerMontantTotal(colis));
-        console.log("Reçu généré pour le colis:", colis.getCode());
+    console.log("Reçu généré pour le colis:", colis.getCode());
         return recu;
     }
 
@@ -298,36 +297,33 @@ export class CargaisonService  implements InterfaceCargaison{
         if(!colis || !colis.getCode()) {
             return { etat: null, message: "Code non trouvé ou colis annulé" };
         }
-        
         const etat = colis.getEtat();
         let message = "";
-        
         switch(etat) {
             case EtatColis.EN_ATTENTE:
-                message = "Votre colis est en attente de traitement";
+                message = MESSAGES.ETAT_EN_ATTENTE;
                 break;
             case EtatColis.EN_COURS:
-                message = "Votre colis est en cours de transport";
+                message = MESSAGES.ETAT_EN_COURS;
                 break;
             case EtatColis.ARRIVE:
-                message = "Votre colis est arrivé à destination";
+                message = MESSAGES.ETAT_ARRIVE;
                 break;
             case EtatColis.RECUPERE:
-                message = "Votre colis a été récupéré";
+                message = MESSAGES.ETAT_RECUPERE;
                 break;
             case EtatColis.PERDU:
-                message = "Votre colis est malheureusement perdu";
+                message = MESSAGES.ETAT_PERDU;
                 break;
             case EtatColis.ARCHIVE:
-                message = "Votre colis a été archivé";
+                message = MESSAGES.ETAT_ARCHIVE;
                 break;
             case EtatColis.ANNULE:
                 message = "Code non trouvé ou colis annulé";
                 break;
             default:
-                message = "État du colis inconnu";
+                message = MESSAGES.ETAT_INCONNU;
         }
-        
         return { etat, message };
     }
 }

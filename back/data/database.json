@@ -23,7 +23,8 @@
             "dateCreation": "2025-01-10",
             "colis": [
                 "COL780",
-                "COL977"
+                "COL977",
+                "COL212"
             ]
         },
         {
@@ -243,6 +244,30 @@
             "cargaisonId": 1,
             "dateCreation": "2025-08-12",
             "dateArchivage": null
+        },
+        {
+            "id": 6,
+            "code": "COL212",
+            "nombre": 200,
+            "poids": 288,
+            "prix": 10000,
+            "typeProduit": "ALIMENTAIRE",
+            "etat": "EN_ATTENTE",
+            "expediteur": {
+                "nom": "ndiaye",
+                "prenom": "moustapha",
+                "telephone": "+221771411251",
+                "adresse": "dakar"
+            },
+            "destinataire": {
+                "nom": "ndiaye",
+                "prenom": "moustapha",
+                "telephone": "+221771411251",
+                "adresse": "dakar"
+            },
+            "cargaisonId": 1,
+            "dateCreation": "2025-08-17",
+            "dateArchivage": null
         }
     ],
     "personnes": [
@@ -370,6 +395,47 @@
                 "statutColis": "EN_ATTENTE",
                 "modeTransport": "Transport Maritime"
             }
+        },
+        {
+            "numerorecu": "REC775",
+            "dateEmission": "2025-08-16 21:10:50",
+            "colis": {
+                "id": 6,
+                "code": "COL212",
+                "nombre": 200,
+                "poids": 288,
+                "prix": 10000,
+                "typeProduit": "ALIMENTAIRE",
+                "etat": "EN_ATTENTE",
+                "expediteur": {
+                    "nom": "ndiaye",
+                    "prenom": "moustapha",
+                    "telephone": "+221771411251",
+                    "adresse": "dakar"
+                },
+                "destinataire": {
+                    "nom": "ndiaye",
+                    "prenom": "moustapha",
+                    "telephone": "+221771411251",
+                    "adresse": "dakar"
+                },
+                "cargaisonId": 1,
+                "dateCreation": "2025-08-17",
+                "dateArchivage": null
+            },
+            "expediteur": {
+                "nom": "ndiaye",
+                "prenom": "moustapha",
+                "telephone": "+221771411251",
+                "adresse": "dakar"
+            },
+            "destinataire": {
+                "nom": "ndiaye",
+                "prenom": "moustapha",
+                "telephone": "+221771411251",
+                "adresse": "dakar"
+            },
+            "montanttotal": 10000
         }
     ]
 }
