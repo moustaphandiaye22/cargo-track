@@ -380,7 +380,7 @@
                     <ul class="space-y-2 text-gray-400">
                         <li class="flex items-center">
                             <i class="fas fa-phone mr-3 text-coral"></i>
-                            +221 33 123 45 67
+                            +221 77 141 12 51
                         </li>
                         <li class="flex items-center">
                             <i class="fas fa-envelope mr-3 text-coral"></i>

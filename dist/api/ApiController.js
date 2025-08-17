@@ -235,6 +235,9 @@ class ApiController {
         }
     }
     static getMessageEtat(etat) {
+        // Utilise la logique de CargaisonService pour éviter la duplication
+        const service = new CargaisonService_1.CargaisonService(TypeCargaison_1.TypeCargaison.MARITIME);
+        const result = service.suivreColis('dummy');
         const messages = {
             'EN_ATTENTE': 'Votre colis est en attente de traitement',
             'EN_COURS': 'Votre colis est en cours de transport',

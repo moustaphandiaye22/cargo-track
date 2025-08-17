@@ -6,6 +6,7 @@ import { TypePersonne } from '../Enum/TypePersonne';
 import { TypeCargaison } from '../Enum/TypeCargaison';
 import { EtatAvancement } from '../Enum/EtatAvancement';
 import { EtatGlobal } from '../Enum/EtatGlobal';
+import { MESSAGES } from '../messages/Message';
 
 interface PersonneData {
     id: number;
@@ -73,7 +74,7 @@ export class DataManager {
             const data = await fs.readFile(this.DB_PATH, 'utf-8');
             return JSON.parse(data);
         } catch (error) {
-            console.error('Erreur lors du chargement des données:', error);
+            console.error(MESSAGES.ERROR_CONNEXION, error);
             return { cargaisons: [], colis: [], personnes: [], reçus: [] };
         }
     }
@@ -83,7 +84,7 @@ export class DataManager {
             await fs.writeFile(this.DB_PATH, JSON.stringify(data, null, 2));
             return true;
         } catch (error) {
-            console.error('Erreur lors de la sauvegarde:', error);
+            console.error(MESSAGES.ERROR_SAUVEGARDE, error);
             return false;
         }
     }

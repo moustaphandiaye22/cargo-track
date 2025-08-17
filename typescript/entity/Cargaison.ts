@@ -4,6 +4,7 @@ import { EtatGlobal } from "../Enum/EtatGlobal";
 import { TypeCargaison } from "../Enum/TypeCargaison";
 import { Coordonnee } from "./Coordonnee";
 import { Trajet } from "./Trajet";
+import { MESSAGES } from '../messages/Message';
 
 
 export class Cargaison{
@@ -59,7 +60,7 @@ export class Cargaison{
                 return false;
             }
             this.sesproduit.push(colis);
-            console.log('Produit ajouté avec succès');
+            console.log(MESSAGES.SUCCES_CREATE_COLIS);
             return true;
         }
 }

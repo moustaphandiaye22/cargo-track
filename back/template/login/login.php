@@ -107,8 +107,7 @@
                             id="username" 
                             name="username"
                             placeholder="Entrez votre nom d'utilisateur"
-                            class="w-full px-4 py-3 border-2 border-light-gray rounded-xl focus:border-coral focus:outline-none transition-colors duration-300 bg-white bg-opacity-90"
-                            required
+                            class="w-full px-4 py-3 border-2 border-light-gray rounded-xl focus:border-coral focus:outline-none transition-colors duration-300 bg-white bg-opacity-90"  
                         >
                     </div>
 
@@ -123,7 +122,6 @@
                                 name="password"
                                 placeholder="Entrez votre mot de passe"
                                 class="w-full px-4 py-3 border-2 border-light-gray rounded-xl focus:border-coral focus:outline-none transition-colors duration-300 bg-white bg-opacity-90 pr-12"
-                                required
                             >
                             <button 
                                 type="button" 
@@ -170,16 +168,7 @@
                 </div>
             </div>
 
-            <!-- Demo Credentials -->
-            <div class="mt-6 bg-white bg-opacity-90 backdrop-blur-md rounded-xl p-4 border border-white border-opacity-20">
-                <h3 class="text-sm font-semibold text-charcoal mb-2">
-                    <i class="fas fa-info-circle text-emerald mr-2"></i>Comptes de démonstration
-                </h3>
-                <div class="text-xs text-medium-gray space-y-1">
-                    <p><strong>Gestionnaire :</strong> admin / admin123</p>
-                    <p><strong>Superviseur :</strong> supervisor / super123</p>
-                </div>
-            </div>
+            
         </div>
     </section>
 

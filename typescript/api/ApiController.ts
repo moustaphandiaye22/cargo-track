@@ -9,6 +9,7 @@ import { EtatAvancement } from '../Enum/EtatAvancement';
 import { Colis } from '../entity/Colis';
 import { Personne } from '../entity/Personne';
 import { AuthService, LoginRequest, AuthResponse } from '../service/AuthService';
+import { MESSAGES } from '../messages/Message';
 
 export class ApiController {
     
@@ -45,7 +46,7 @@ export class ApiController {
             if (!colisData) {
                 return {
                     statut: 'erreur',
-                    message: 'Code de suivi non trouvé'
+                    message: MESSAGES.CODE_SUIVI_NON_TROUVE
                 };
             }
 
@@ -66,10 +67,10 @@ export class ApiController {
                 }
             };
         } catch (error) {
-            console.error('Erreur lors du suivi:', error);
+            console.error(MESSAGES.ERROR_CONNEXION, error);
             return {
                 statut: 'erreur',
-                message: 'Erreur serveur lors du suivi'
+                message: MESSAGES.ERROR_CONNEXION
             };
         }
     }
@@ -89,8 +90,8 @@ export class ApiController {
             service.creerCargaison();
             
             const cargaisonData = {
-                id: 0, // sera assigné par DataManager
-                numero: 0, // sera assigné par DataManager
+                id: 0, 
+                numero: 0, 
                 type: typeCargaison,
                 etatglobal: EtatGlobal.OUVERT,
                 etatAvancement: EtatAvancement.EN_ATTENTE,
@@ -111,20 +112,20 @@ export class ApiController {
                     statut: 'succès',
                     data: {
                         type: typeCargaison,
-                        message: `Cargaison ${typeCargaison} créée avec succès`
+                        message: MESSAGES.SUCCES_CREATE_CARGAISON
                     }
                 };
             } else {
                 return {
                     statut: 'erreur',
-                    message: 'Erreur lors de la sauvegarde'
+                    message: MESSAGES.ERROR_SAUVEGARDE
                 };
             }
         } catch (error) {
-            console.error('Erreur lors de la création:', error);
+            console.error(MESSAGES.ERROR_CREATE_CARGAISON, error);
             return {
                 statut: 'erreur',
-                message: 'Erreur lors de la création de la cargaison'
+                message: MESSAGES.ERROR_CREATE_CARGAISON
             };
         }
     }
@@ -151,7 +152,7 @@ export class ApiController {
             const result = service.ajouterproduit(colis);
             
             const colisData = {
-                id: 0, // sera assigné par DataManager
+                id: 0, 
                 code: result.getCode(),
                 nombre: 1,
                 poids: data.poids,
@@ -177,20 +178,20 @@ export class ApiController {
                     statut: 'succès',
                     data: {
                         code: result.getCode(),
-                        message: 'Colis ajouté avec succès'
+                        message: MESSAGES.SUCCES_CREATE_COLIS
                     }
                 };
             } else {
                 return {
                     statut: 'erreur',
-                    message: 'Erreur lors de la sauvegarde'
+                    message: MESSAGES.ERROR_SAUVEGARDE
                 };
             }
         } catch (error) {
-            console.error('Erreur lors de l\'ajout:', error);
+            console.error(MESSAGES.ERROR_CREATE_COLIS, error);
             return {
                 statut: 'erreur',
-                message: 'Erreur lors de l\'ajout du colis'
+                message: MESSAGES.ERROR_CREATE_COLIS
             };
         }
     }
@@ -213,10 +214,10 @@ export class ApiController {
                 }))
             };
         } catch (error) {
-            console.error('Erreur lors de la récupération:', error);
+            console.error(MESSAGES.ERROR_CONNEXION, error);
             return {
                 statut: 'erreur',
-                message: 'Erreur lors de la récupération des cargaisons'
+                message: MESSAGES.ERROR_CONNEXION
             };
         }
     }
@@ -239,10 +240,10 @@ export class ApiController {
                 }))
             };
         } catch (error) {
-            console.error('Erreur lors de la récupération:', error);
+            console.error(MESSAGES.ERROR_CONNEXION, error);
             return {
                 statut: 'erreur',
-                message: 'Erreur lors de la récupération des colis'
+                message: MESSAGES.ERROR_CONNEXION
             };
         }
     }
@@ -256,35 +257,36 @@ export class ApiController {
             
             if (success) {
                 await DataManager.updateColisEtat(code, nouvelEtat.toUpperCase() as EtatColis);
-                
                 return {
                     statut: 'succès',
-                    message: `État du colis ${code} changé vers ${nouvelEtat}`
+                    message: MESSAGES.ETAT_COLIS_CHANGE
                 };
             } else {
                 return {
                     statut: 'erreur',
-                    message: 'Colis non trouvé'
+                    message: MESSAGES.COLIS_NON_TROUVE
                 };
             }
         } catch (error) {
-            console.error('Erreur lors du changement d\'état:', error);
+            console.error(MESSAGES.ERROR_CONNEXION, error);
             return {
                 statut: 'erreur',
-                message: 'Erreur lors du changement d\'état'
+                message: MESSAGES.ERROR_CONNEXION
             };
         }
     }
 
     private static getMessageEtat(etat: string): string {
+        const service = new CargaisonService(TypeCargaison.MARITIME);
+        const result = service.suivreColis('dummy');
         const messages: { [key: string]: string } = {
-            'EN_ATTENTE': 'Votre colis est en attente de traitement',
-            'EN_COURS': 'Votre colis est en cours de transport',
-            'ARRIVE': 'Votre colis est arrivé à destination',
-            'RECUPERE': 'Votre colis a été récupéré',
-            'PERDU': 'Votre colis est malheureusement perdu',
-            'ARCHIVE': 'Votre colis a été archivé'
+            'EN_ATTENTE': MESSAGES.ETAT_EN_ATTENTE,
+            'EN_COURS': MESSAGES.ETAT_EN_COURS,
+            'ARRIVE': MESSAGES.ETAT_ARRIVE,
+            'RECUPERE': MESSAGES.ETAT_RECUPERE,
+            'PERDU': MESSAGES.ETAT_PERDU,
+            'ARCHIVE': MESSAGES.ETAT_ARCHIVE
         };
-        return messages[etat] || 'État inconnu';
+        return messages[etat] || MESSAGES.ETAT_INCONNU;
     }
 }

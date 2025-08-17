@@ -9,7 +9,6 @@ import { EtatColis } from "../Enum/EtatColis";
 import { Recu } from "../entity/Recu";
 export declare class CargaisonService implements InterfaceCargaison {
     private type;
-    private types;
     private cargaison;
     constructor(type: TypeCargaison);
     creerCargaison(): void;
@@ -17,7 +16,7 @@ export declare class CargaisonService implements InterfaceCargaison {
     calculerFrais(): number;
     nombreProduit(): number;
     sommeTotal(): number;
-    getFraisParType(typeColis?: TypeColis): number;
+    getFraisParType(typeColis: TypeColis): number;
     rechercherColis(code: string): Colis;
     rechecherCargaison(code: string, lieuDepart: Coordonnee, lieuArrive: Coordonnee, datedepart: Date, datedarrive: Date, type: TypeCargaison): Cargaison;
     enregistrerClient(personne: Personne): Personne;

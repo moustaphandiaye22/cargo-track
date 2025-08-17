@@ -91,9 +91,8 @@ class CargaisonService {
         return total;
     }
     getFraisParType(typeColis) {
-        const typeAUtiliser = typeColis || this.types;
         if (this.type === TypeCargaison_1.TypeCargaison.MARITIME) {
-            switch (typeAUtiliser) {
+            switch (typeColis) {
                 case TypeColis_1.TypeColis.ALIMENTAIRE: return 90;
                 case TypeColis_1.TypeColis.CHIMIQUE: return 500;
                 case TypeColis_1.TypeColis.FRAGILE: return 400;
@@ -103,7 +102,7 @@ class CargaisonService {
             }
         }
         else if (this.type === TypeCargaison_1.TypeCargaison.AERIENNE) {
-            switch (typeAUtiliser) {
+            switch (typeColis) {
                 case TypeColis_1.TypeColis.ALIMENTAIRE: return 300;
                 case TypeColis_1.TypeColis.CHIMIQUE: return 0; // Interdit
                 case TypeColis_1.TypeColis.FRAGILE: return 100;
@@ -113,7 +112,7 @@ class CargaisonService {
             }
         }
         else if (this.type === TypeCargaison_1.TypeCargaison.ROUTIERE) {
-            switch (typeAUtiliser) {
+            switch (typeColis) {
                 case TypeColis_1.TypeColis.ALIMENTAIRE: return 100;
                 case TypeColis_1.TypeColis.CHIMIQUE: return 0; // Interdit
                 case TypeColis_1.TypeColis.FRAGILE: return 200;
