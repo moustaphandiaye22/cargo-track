@@ -199,6 +199,17 @@ function genererTableauColis($data) {
                     <button class="text-coral hover:bg-coral hover:text-white px-3 py-1 rounded transition-all">
                         <i class="fas fa-trash"></i>
                     </button>
+                        <select class="etat-select px-2 py-1 border rounded text-sm" data-code="' . htmlspecialchars($col['code']) . '">
+                            <option value="">Changer état</option>
+                            <option value="EN_ATTENTE">En Attente</option>
+                            <option value="EN_COURS">En Transit</option>
+                            <option value="ARRIVE">Arrivé</option>
+                            <option value="RECUPERE">Récupéré</option>
+                            <option value="PERDU">Perdu</option>
+                            <option value="ARCHIVE">Archivé</option>
+                            <option value="ANNULE">Annulé</option>
+                        </select>
+                        <button class="btn-etat-change bg-coral text-white px-2 py-1 rounded text-xs" data-code="' . htmlspecialchars($col['code']) . '">Valider</button>
                 </div>
             </td>
         </tr>';

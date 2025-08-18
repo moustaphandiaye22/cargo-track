@@ -228,7 +228,7 @@
             "poids": 89,
             "prix": 10000,
             "typeProduit": "ALIMENTAIRE",
-            "etat": "EN_ATTENTE",
+            "etat": "ARRIVE",
             "expediteur": {
                 "nom": "ndiaye",
                 "prenom": "moustapha",
@@ -273,10 +273,10 @@
     "personnes": [
         {
             "id": 1,
-            "nom": "Dupont",
-            "prenom": "Jean",
+            "nom": "ndiaye",
+            "prenom": "moustapha",
             "telephone": "+221771234567",
-            "email": "jean.dupont@email.com",
+            "email": "ndiaye.moustapha@gmail.com",
             "adresse": "Dakar, Sénégal",
             "type": "CLIENT"
         },

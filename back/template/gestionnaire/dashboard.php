@@ -163,7 +163,7 @@ if (isset($_SESSION['recu_genere'])) {
                 <!-- Cargaison -->
                 <div>
                     <label class="block text-charcoal font-semibold mb-1 text-sm">Cargaison de destination *</label>
-                    <select name="cargaison_id" id="selectCargaison" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm" required>
+                    <select name="cargaison_id" id="selectCargaison" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
                         <option value="">Sélectionner une cargaison...</option>
                         <?php 
                         if (isset($data['cargaisons'])) {
@@ -630,12 +630,12 @@ if (!$data) {
     </div>
 
     <!-- Scripts modulaires chargés avant la fermeture du body -->
-    <script src="/public/js/form-validator.js"></script>
-    <script src="/public/js/transport-compatibility.js"></script>
-    <script src="/public/js/modal-manager.js"></script>
-    <script src="/public/js/form-handler.js"></script>
-    <script src="/public/js/dashboard.js"></script>
-    
+    <script type="module" src="/js/form-validator.js"></script>
+    <script type="module" src="/js/transport-compatibility.js"></script>
+    <script type="module" src="/js/modal-manager.js"></script>
+    <script type="module" src="/js/form-handler.js"></script>
+    <script type="module" src="/js/dashboard.js"></script>
+
     <script>
         // Variables globales pour les instances
         let dashboard, modalManager, formValidator, transportCompatibility, formHandler;
@@ -644,22 +644,32 @@ if (!$data) {
         document.addEventListener('DOMContentLoaded', function() {
             try {
                 // Créer les instances
-                formValidator = new FormValidator();
-                transportCompatibility = new TransportCompatibility();
+                if (typeof FormValidator !== 'undefined') {
+                    formValidator = new FormValidator();
+                } else {
+                    formValidator = null;
+                }
+                if (typeof TransportCompatibility !== 'undefined') {
+                    transportCompatibility = new TransportCompatibility();
+                } else {
+                    transportCompatibility = null;
+                }
                 modalManager = new ModalManager();
-                formHandler = new FormHandler(formValidator);
+                if (formValidator) {
+                    formHandler = new FormHandler(formValidator);
+                } else {
+                    formHandler = null;
+                }
                 dashboard = new Dashboard();
-                
                 // Exposer globalement pour les événements onclick
                 window.modalManager = modalManager;
                 window.formValidator = formValidator;
                 window.transportCompatibility = transportCompatibility;
                 window.formHandler = formHandler;
                 window.dashboard = dashboard;
-                
                 console.log('Dashboard initialisé avec succès');
             } catch (error) {
-                console.error('Erreur lors de l\'initialisation du dashboard:', error);
+                console.error("Erreur lors de l'initialisation du dashboard:", error);
             }
         });
         

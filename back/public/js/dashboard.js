@@ -13,8 +13,78 @@ class Dashboard {
         this.setupLogout();
         this.setupDateDefaults();
         this.setupTableSearch();
+            this.setupEtatChange();
     }
 
+        setupEtatChange() {
+        document.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('btn-etat-change')) {
+                const code = e.target.getAttribute('data-code');
+                const select = e.target.parentElement.querySelector('.etat-select');
+                const nouvelEtat = select.value;
+                if (!code || !nouvelEtat) {
+                    alert('Veuillez choisir un état.');
+                    return;
+                }
+                e.target.disabled = true;
+                e.target.textContent = '...';
+                try {
+                    const response = await fetch('/api/colis/changer-etat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code, etat: nouvelEtat })
+                    });
+                    const result = await response.json();
+                    if (result.statut === 'succès') {
+                        // Met à jour dynamiquement la ligne du colis
+                        const row = e.target.closest('tr');
+                        if (row) {
+                            // Met à jour le badge d'état
+                            const etatSpan = row.querySelector('td span');
+                            if (etatSpan) {
+                                let etatClass = 'bg-medium-gray';
+                                let etatText = nouvelEtat;
+                                switch (nouvelEtat) {
+                                    case 'EN_ATTENTE':
+                                        etatClass = 'bg-golden';
+                                        etatText = 'En Attente';
+                                        break;
+                                    case 'EN_COURS':
+                                        etatClass = 'bg-coral';
+                                        etatText = 'En Transit';
+                                        break;
+                                    case 'ARRIVE':
+                                        etatClass = 'bg-emerald';
+                                        etatText = 'Arrivé';
+                                        break;
+                                    default:
+                                        etatClass = 'bg-medium-gray';
+                                        etatText = nouvelEtat.charAt(0) + nouvelEtat.slice(1).toLowerCase().replace('_', ' ');
+                                }
+                                etatSpan.className = `px-3 py-1 ${etatClass} text-white rounded-full text-sm`;
+                                etatSpan.textContent = etatText;
+                            }
+                        }
+                        // Message de confirmation
+                        e.target.textContent = 'Valider';
+                        e.target.disabled = false;
+                        const msg = document.createElement('div');
+                        msg.textContent = 'État du colis mis à jour !';
+                        msg.className = 'fixed top-4 right-4 bg-emerald text-white px-4 py-2 rounded shadow-lg z-50';
+                        document.body.appendChild(msg);
+                        setTimeout(() => msg.remove(), 2000);
+                    } else {
+                        alert(result.message || 'Erreur lors du changement d\'état');
+                    }
+                } catch (err) {
+                    alert('Erreur serveur ou réseau');
+                } finally {
+                    e.target.disabled = false;
+                    if (e.target.textContent !== 'Valider') e.target.textContent = 'Valider';
+                }
+            }
+        });
+        }
     setupTabNavigation() {
         // La fonction showTab sera appelée directement depuis le HTML
         window.showTab = (tabName) => {
