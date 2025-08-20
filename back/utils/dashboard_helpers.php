@@ -110,8 +110,30 @@ function genererTableauCargaisons($data) {
         
         $route = $cargaison['lieuDepart']['nom'] . ' → ' . $cargaison['lieuArrive']['nom'];
         
+        // Déterminer la couleur et le texte pour l'état global
+        $etatGlobalClass = 'bg-medium-gray';
+        $etatGlobalText = $cargaison['etatGlobal'];
+        
+        switch ($cargaison['etatGlobal']) {
+            case 'OUVERT':
+                $etatGlobalClass = 'bg-emerald';
+                $etatGlobalText = 'Ouvert';
+                break;
+            case 'FERME':
+                $etatGlobalClass = 'bg-red-500';
+                $etatGlobalText = 'Fermé';
+                break;
+        }
+        
         $html .= '
-        <tr class="hover:bg-light-gray transition-colors">
+        <tr class="hover:bg-light-gray transition-colors"
+            data-id="' . $cargaison['id'] . '"
+            data-code="' . htmlspecialchars($cargaison['numero']) . '"
+            data-type="' . htmlspecialchars($cargaison['type']) . '"
+            data-depart="' . htmlspecialchars($cargaison['lieuDepart']['nom']) . '"
+            data-arrivee="' . htmlspecialchars($cargaison['lieuArrive']['nom']) . '"
+            data-date-depart="' . htmlspecialchars($cargaison['dateDepart']) . '"
+            data-date-arrivee="' . htmlspecialchars($cargaison['dateArrive']) . '">
             <td class="px-6 py-4 font-semibold text-charcoal">' . htmlspecialchars($cargaison['numero']) . '</td>
             <td class="px-6 py-4">
                 <span class="px-3 py-1 ' . $typeClass . ' text-white rounded-full text-sm">' . $typeText . '</span>
@@ -122,16 +144,16 @@ function genererTableauCargaisons($data) {
             </td>
             <td class="px-6 py-4 text-medium-gray">' . $colisCount . '/' . $cargaison['poidsMax'] . '</td>
             <td class="px-6 py-4">
+                <span class="px-3 py-1 ' . $etatGlobalClass . ' text-white rounded-full text-sm">' . $etatGlobalText . '</span>
+            </td>
+            <td class="px-6 py-4">
                 <div class="flex space-x-2">
-                    <button class="text-emerald hover:bg-emerald hover:text-white px-3 py-1 rounded transition-all">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="text-golden hover:bg-golden hover:text-white px-3 py-1 rounded transition-all">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="text-coral hover:bg-coral hover:text-white px-3 py-1 rounded transition-all">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <select class="etat-global-select px-2 py-1 border rounded text-sm" data-id="' . $cargaison['id'] . '">
+                        <option value="">Changer état</option>
+                        <option value="OUVERT" ' . ($cargaison['etatGlobal'] === 'OUVERT' ? 'selected' : '') . '>Ouvert</option>
+                        <option value="FERME" ' . ($cargaison['etatGlobal'] === 'FERME' ? 'selected' : '') . '>Fermé</option>
+                    </select>
+                    <button class="btn-etat-global-change bg-coral text-white px-2 py-1 rounded text-xs" data-id="' . $cargaison['id'] . '">Valider</button>
                 </div>
             </td>
         </tr>';

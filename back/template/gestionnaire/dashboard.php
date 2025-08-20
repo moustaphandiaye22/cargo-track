@@ -415,13 +415,49 @@ if (!$data) {
                             <i class="fas fa-plus mr-2"></i>Nouvelle Cargaison
                         </button>
                     </div>
-
-                    <div class="mb-4">
-                        <input type="text" placeholder="Rechercher une cargaison..." class="w-full md:w-1/3 px-4 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none">
+                    
+                    <!-- Formulaire de recherche avancée -->
+                    <div class="mb-6 bg-light-gray p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-charcoal mb-3">Recherche avancée</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-charcoal mb-1">Code</label>
+                                <input type="text" id="search-code" placeholder="Code cargaison" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-charcoal mb-1">Lieu de départ</label>
+                                <input type="text" id="search-depart" placeholder="Ville de départ" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-charcoal mb-1">Lieu d'arrivée</label>
+                                <input type="text" id="search-arrivee" placeholder="Ville d'arrivée" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-charcoal mb-1">Type</label>
+                                <select id="search-type" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
+                                    <option value="">Tous les types</option>
+                                    <option value="MARITIME">Maritime</option>
+                                    <option value="AERIENNE">Aérien</option>
+                                    <option value="ROUTIERE">Routier</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-charcoal mb-1">Date</label>
+                                <input type="date" id="search-date" class="w-full px-3 py-2 border border-light-gray rounded-lg focus:border-coral focus:outline-none text-sm">
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-4">
+                            <button id="btn-rechercher" class="bg-coral hover:bg-sunset text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm mr-2">
+                                <i class="fas fa-search mr-1"></i>Rechercher
+                            </button>
+                            <button id="btn-effacer" class="bg-medium-gray hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm">
+                                <i class="fas fa-eraser mr-1"></i>Effacer
+                            </button>
+                        </div>
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="w-full bg-white rounded-lg shadow">
+                        <table id="table-cargaisons" class="w-full bg-white rounded-lg shadow">
                             <thead class="bg-light-gray">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-charcoal font-semibold">Numéro</th>
@@ -429,6 +465,8 @@ if (!$data) {
                                     <th class="px-6 py-3 text-left text-charcoal font-semibold">Route</th>
                                     <th class="px-6 py-3 text-left text-charcoal font-semibold">État</th>
                                     <th class="px-6 py-3 text-left text-charcoal font-semibold">Colis</th>
+                                    <th class="px-6 py-3 text-left text-charcoal font-semibold">État Global</th>
+
                                     <th class="px-6 py-3 text-left text-charcoal font-semibold">Actions</th>
                                 </tr>
                             </thead>
@@ -641,8 +679,24 @@ if (!$data) {
         let dashboard, modalManager, formValidator, transportCompatibility, formHandler;
         
         // Initialisation quand le DOM est prêt
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             try {
+                // Attendre que tous les modules soient chargés
+                await new Promise(resolve => {
+                    const checkModules = () => {
+                        if (typeof FormValidator !== 'undefined' &&
+                            typeof TransportCompatibility !== 'undefined' &&
+                            typeof ModalManager !== 'undefined' &&
+                            typeof FormHandler !== 'undefined' &&
+                            typeof Dashboard !== 'undefined') {
+                            resolve();
+                        } else {
+                            setTimeout(checkModules, 50);
+                        }
+                    };
+                    checkModules();
+                });
+                
                 // Créer les instances
                 if (typeof FormValidator !== 'undefined') {
                     formValidator = new FormValidator();
@@ -654,13 +708,23 @@ if (!$data) {
                 } else {
                     transportCompatibility = null;
                 }
-                modalManager = new ModalManager();
+                if (typeof ModalManager !== 'undefined') {
+                    modalManager = new ModalManager();
+                } else {
+                    modalManager = null;
+                    console.warn('ModalManager non disponible');
+                }
                 if (formValidator) {
                     formHandler = new FormHandler(formValidator);
                 } else {
                     formHandler = null;
                 }
-                dashboard = new Dashboard();
+                if (typeof Dashboard !== 'undefined') {
+                    dashboard = new Dashboard();
+                } else {
+                    dashboard = null;
+                    console.warn('Dashboard non disponible');
+                }
                 // Exposer globalement pour les événements onclick
                 window.modalManager = modalManager;
                 window.formValidator = formValidator;
