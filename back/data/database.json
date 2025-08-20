@@ -4,7 +4,7 @@
             "id": 1,
             "numero": 100001,
             "type": "MARITIME",
-            "etatGlobal": "OUVERT",
+            "etatGlobal": "FERME",
             "etatAvancement": "EN_ATTENTE",
             "poidsMax": 50,
             "distance": 5800,
@@ -127,7 +127,7 @@
             "poids": 2.5,
             "prix": 15000,
             "typeProduit": "ALIMENTAIRE",
-            "etat": "EN_COURS",
+            "etat": "ARCHIVE",
             "cargaisonId": 1,
             "expediteur": {
                 "nom": "Dupont",
@@ -179,7 +179,7 @@
             "poids": 3.2,
             "prix": 18000,
             "typeProduit": "INCASSABLE",
-            "etat": "EN_ATTENTE",
+            "etat": "RECUPERE",
             "cargaisonId": null,
             "expediteur": {
                 "nom": "Commerce Local",
@@ -228,7 +228,7 @@
             "poids": 89,
             "prix": 10000,
             "typeProduit": "ALIMENTAIRE",
-            "etat": "EN_ATTENTE",
+            "etat": "ANNULE",
             "expediteur": {
                 "nom": "ndiaye",
                 "prenom": "moustapha",
@@ -273,10 +273,10 @@
     "personnes": [
         {
             "id": 1,
-            "nom": "Dupont",
-            "prenom": "Jean",
+            "nom": "ndiaye",
+            "prenom": "moustapha",
             "telephone": "+221771234567",
-            "email": "jean.dupont@email.com",
+            "email": "ndiaye.moustapha@gmail.com",
             "adresse": "Dakar, Sénégal",
             "type": "CLIENT"
         },

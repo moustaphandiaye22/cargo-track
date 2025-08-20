@@ -197,4 +197,11 @@ class FormHandler {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = FormHandler;
+} else if (typeof window !== 'undefined') {
+    // Exposer globalement pour les modules ES6
+    window.FormHandler = FormHandler;
 }
+
+// Export ES6 pour les modules modernes
+export default FormHandler;
+export { FormHandler };

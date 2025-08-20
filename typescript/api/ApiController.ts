@@ -250,13 +250,20 @@ export class ApiController {
 
     static async changerEtatColis(code: string, nouvelEtat: string): Promise<{statut: string, message?: string}> {
         try {
-            const typeCargaison = TypeCargaison.MARITIME; 
-            const service = new CargaisonService(typeCargaison);
+            // Vérifier si le colis existe
+            const colis = await DataManager.getColisByCode(code);
             
-            const success = service.changerEtatColis(code, nouvelEtat as EtatColis);
+            if (!colis) {
+                return {
+                    statut: 'erreur',
+                    message: MESSAGES.COLIS_NON_TROUVE
+                };
+            }
+            
+            // Mettre à jour l'état du colis
+            const success = await DataManager.updateColisEtat(code, nouvelEtat.toUpperCase() as EtatColis);
             
             if (success) {
-                await DataManager.updateColisEtat(code, nouvelEtat.toUpperCase() as EtatColis);
                 return {
                     statut: 'succès',
                     message: MESSAGES.ETAT_COLIS_CHANGE
@@ -264,7 +271,7 @@ export class ApiController {
             } else {
                 return {
                     statut: 'erreur',
-                    message: MESSAGES.COLIS_NON_TROUVE
+                    message: MESSAGES.ERROR_SAUVEGARDE
                 };
             }
         } catch (error) {
@@ -288,5 +295,40 @@ export class ApiController {
             'ARCHIVE': MESSAGES.ETAT_ARCHIVE
         };
         return messages[etat] || MESSAGES.ETAT_INCONNU;
+    }
+    
+    static async changerEtatCargaison(id: number, nouvelEtat: string): Promise<{statut: string, message?: string}> {
+        try {
+            // Vérifier si la cargaison existe
+            const cargaison = await DataManager.getCargaisonById(id);
+            
+            if (!cargaison) {
+                return {
+                    statut: 'erreur',
+                    message: 'Cargaison non trouvée'
+                };
+            }
+            
+            // Mettre à jour l'état global de la cargaison
+            const success = await DataManager.updateCargaisonEtatGlobal(id, nouvelEtat.toUpperCase() as EtatGlobal);
+            
+            if (success) {
+                return {
+                    statut: 'succès',
+                    message: 'État de la cargaison mis à jour'
+                };
+            } else {
+                return {
+                    statut: 'erreur',
+                    message: 'Erreur lors de la sauvegarde'
+                };
+            }
+        } catch (error) {
+            console.error(MESSAGES.ERROR_CONNEXION, error);
+            return {
+                statut: 'erreur',
+                message: MESSAGES.ERROR_CONNEXION
+            };
+        }
     }
 }

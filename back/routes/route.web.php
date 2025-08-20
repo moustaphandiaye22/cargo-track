@@ -258,6 +258,91 @@ function getPositionActuelle($etat, $cargaison) {
 }
 
 // Routes principales
+// Route pour changer l'état d'un colis
+$routes[] = [
+    'method' => 'POST',
+    'path' => '/api/colis/changer-etat',
+    'action' => function() {
+        header('Content-Type: application/json');
+        $input = json_decode(file_get_contents('php://input'), true);
+        $code = $input['code'] ?? '';
+        $etat = $input['etat'] ?? '';
+        if (!$code || !$etat) {
+            echo json_encode([
+                'statut' => 'erreur',
+                'message' => 'Code ou état manquant'
+            ]);
+            return;
+        }
+        $dbPath = dirname(__DIR__) . '/data/database.json';
+        $data = file_exists($dbPath) ? json_decode(file_get_contents($dbPath), true) : [];
+        $found = false;
+        if (isset($data['colis'])) {
+            foreach ($data['colis'] as &$colis) {
+                if (strtoupper($colis['code']) === strtoupper($code)) {
+                    $colis['etat'] = $etat;
+                    $found = true;
+                    break;
+                }
+            }
+        }
+        if ($found) {
+            file_put_contents($dbPath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            echo json_encode([
+                'statut' => 'succès',
+                'message' => 'État du colis mis à jour'
+            ]);
+        } else {
+            echo json_encode([
+                'statut' => 'erreur',
+                'message' => 'Colis non trouvé'
+            ]);
+        }
+    }
+];
+
+// Route pour changer l'état global d'une cargaison
+$routes[] = [
+    'method' => 'POST',
+    'path' => '/api/cargaison/changer-etat-global',
+    'action' => function() {
+        header('Content-Type: application/json');
+        $input = json_decode(file_get_contents('php://input'), true);
+        $id = $input['id'] ?? 0;
+        $etat = $input['etat'] ?? '';
+        if (!$id || !$etat) {
+            echo json_encode([
+                'statut' => 'erreur',
+                'message' => 'ID ou état manquant'
+            ]);
+            return;
+        }
+        $dbPath = dirname(__DIR__) . '/data/database.json';
+        $data = file_exists($dbPath) ? json_decode(file_get_contents($dbPath), true) : [];
+        $found = false;
+        if (isset($data['cargaisons'])) {
+            foreach ($data['cargaisons'] as &$cargaison) {
+                if ($cargaison['id'] == $id) {
+                    $cargaison['etatGlobal'] = $etat;
+                    $found = true;
+                    break;
+                }
+            }
+        }
+        if ($found) {
+            file_put_contents($dbPath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            echo json_encode([
+                'statut' => 'succès',
+                'message' => 'État global de la cargaison mis à jour'
+            ]);
+        } else {
+            echo json_encode([
+                'statut' => 'erreur',
+                'message' => 'Cargaison non trouvée'
+            ]);
+        }
+    }
+];
 $routes[] = [
     'method' => 'GET',
     'path' => '/',

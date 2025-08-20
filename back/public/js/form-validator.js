@@ -153,4 +153,11 @@ class FormValidator {
 // Export pour utilisation dans d'autres fichiers
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = FormValidator;
+} else if (typeof window !== 'undefined') {
+    // Exposer globalement pour les modules ES6
+    window.FormValidator = FormValidator;
 }
+
+// Export ES6 pour les modules modernes
+export default FormValidator;
+export { FormValidator };

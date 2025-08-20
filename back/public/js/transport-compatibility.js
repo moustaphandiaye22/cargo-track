@@ -92,4 +92,11 @@ class TransportCompatibility {
 // Export pour utilisation dans d'autres fichiers
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = TransportCompatibility;
+} else if (typeof window !== 'undefined') {
+    // Exposer globalement pour les modules ES6
+    window.TransportCompatibility = TransportCompatibility;
 }
+
+// Export ES6 pour les modules modernes
+export default TransportCompatibility;
+export { TransportCompatibility };

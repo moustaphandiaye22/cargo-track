@@ -149,4 +149,16 @@ export class DataManager {
         data.cargaisons.push(cargaisonData);
         return await this.saveData(data);
     }
+    
+    static async updateCargaisonEtatGlobal(id: number, nouvelEtat: EtatGlobal): Promise<boolean> {
+        const data = await this.loadData();
+        const cargaisonIndex = data.cargaisons.findIndex(c => c.id === id);
+        
+        if (cargaisonIndex === -1) {
+            return false;
+        }
+        
+        data.cargaisons[cargaisonIndex].etatglobal = nouvelEtat;
+        return await this.saveData(data);
+    }
 }

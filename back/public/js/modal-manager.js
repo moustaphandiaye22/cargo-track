@@ -138,4 +138,11 @@ class ModalManager {
 // Export pour utilisation dans d'autres fichiers
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ModalManager;
+} else if (typeof window !== 'undefined') {
+    // Exposer globalement pour les modules ES6
+    window.ModalManager = ModalManager;
 }
+
+// Export ES6 pour les modules modernes
+export default ModalManager;
+export { ModalManager };
